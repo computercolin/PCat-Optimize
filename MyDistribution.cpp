@@ -48,24 +48,16 @@ double MyDistribution::perturb_parameters()
 {
 	double logH = 0.;
 
-	int which = randInt(4) + 1;
+	int which = randInt(Data::get_instance().get_nbin() > 1 ? 4 : 3);
 
-	if(which == 0)
-	{
-		/*fluxlo = log(fluxlo);
-		fluxlo += log(fluxlo_max/fluxlo_min)*randh();
-		fluxlo = mod(fluxlo - log(fluxlo_min),
-			log(fluxlo_max/fluxlo_min)) + log(fluxlo_min);
-		fluxlo = exp(fluxlo);*/
-	}
-        else if(which == 1)
+        if(which == 0)
         {
                 fluxhi = fluxhi_min / fluxhi;
                 fluxhi += randh();
                 fluxhi = mod(fluxhi, 1.);
                 fluxhi = fluxhi_min / fluxhi;
         }
-	else if(which == 2)
+	else if(which == 1)
 	{
 		norm = log(norm);
 		norm += log(norm_max/norm_min)*randh();
@@ -73,12 +65,12 @@ double MyDistribution::perturb_parameters()
 			log(norm_max/norm_min)) + log(norm_min);
 		norm = exp(norm);
 	}
-	else if(which == 3)
+	else if(which == 2)
 	{
 		gamma += randh();
 		gamma = mod(gamma, 1.);
 	}
-	else if(which == 4){
+	else if(which == 3){
 		int i = randInt(Data::get_instance().get_nbin()-1);
 		mean_colors[i] = atan(mean_colors[i]) / M_PI + 0.5;
 		mean_colors[i] += randh();
@@ -89,7 +81,6 @@ double MyDistribution::perturb_parameters()
 		sdev_colors[i] = mod(sdev_colors[i], 1.);
 		sdev_colors[i] = sdev_color_scale * tan(0.5 * M_PI * sdev_colors[i]);
 	}
-
 
 	return logH;
 }
@@ -187,9 +178,6 @@ void MyDistribution::to_uniform(std::vector<double>& vec) const
 
 void MyDistribution::print(std::ostream& out) const
 {
-	//out<<fluxlo<<' '<<fluxhi<<' '<<norm<<' '<<gamma<<' ';
-	for (int i=0; i<Data::get_instance().get_nbin() - 1; i++){
-		out<<mean_colors[i]<<' '<<sdev_colors[i]<<' ';
-	}
+	out<<fluxlo<<' '<<fluxhi<<' '<<norm<<' '<<gamma<<' ';
 }
 
