@@ -10,15 +10,16 @@ class MyDistribution:public Distribution
 	private:
 		// Limits
 		double l_min, l_max, b_min, b_max;
-		double fluxlo_min, fluxlo_max;
+		double fluxlo;
 		double fluxhi_min;
 		double flux_norm, norm_min, norm_max;
 
 		// Lower limit and 1/slope for Pareto interim prior
 		// for masses
-		double fluxlo, fluxhi, norm;
+		double fluxhi, norm;
 		double gamma;
 
+		int midbin;
 		double sdev_color_scale;
 		std::vector< double > mean_colors;
 		std::vector< double > sdev_colors;
@@ -28,10 +29,11 @@ class MyDistribution:public Distribution
 	public:
 		MyDistribution(double l_min, double l_max,
 					double b_min, double b_max,
-					double fluxlo_min, double fluxlo_max,
+					double fluxlo,
 					double fluxhi_min,
 					double flux_norm,
-					double norm_min, double norm_max);
+					double norm_min, double norm_max,
+					int midbin);
 
 		void fromPrior();
 

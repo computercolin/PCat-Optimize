@@ -32,7 +32,7 @@ double MyRJObject<Distribution>::perturb()
 
 	double logH = 0.;
 
-	int which = (this->fixed)?(1 + DNest3::randInt(2)):(DNest3::randInt(3));
+	int which = (this->fixed)?(1 + DNest3::randInt(2)):(DNest3::randInt(3)); //leaving out merges/splits for now
 
 	if(which == 0)
 	{
@@ -66,6 +66,7 @@ double MyRJObject<Distribution>::perturb()
 	return logH;
 }
 
+//FIXME 
 template<class Distribution>
 double MyRJObject<Distribution>::perturb_mergesplit(){
 	double logH = 0;

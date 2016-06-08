@@ -40,7 +40,7 @@ def postprocess(filename, temperature=1., numResampleLogX=1, plot=True, loaded=[
 	if len(loaded) == 0:
 		levels = np.atleast_2d(np.loadtxt("run-"+filename+"/levels.txt"))
 		sample_info = np.atleast_2d(np.loadtxt("run-"+filename+"/sample_info.txt"))
-		sample = np.atleast_2d(np.loadtxt("run-"+filename+"/sample.txt"))
+		sample = np.atleast_2d(np.loadtxt("run-"+filename+"/sample.txt.gz"))
 		#if(sample.shape[0] == 1):
 		#	sample = sample.T
 	else:

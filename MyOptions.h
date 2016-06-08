@@ -4,5 +4,5 @@
 class MyOptions : public DNest3::Options
 {
 	public:
-		MyOptions(const char* outname);
+		MyOptions(const char* outname, bool useGzip);
 };

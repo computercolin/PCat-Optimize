@@ -32,7 +32,7 @@ class MyModel:public DNest3::Model
                 std::vector<double> tem;
 
 		// PSF
-		double s_min, s_max; // same prior bounds for all energy bins and PSF classes
+		double s_min, s_max, lim; // same prior bounds for all energy bins and PSF classes
 		std::vector<double> score;
 		//std::vector<double> gcore;
 		std::vector<double> stail;

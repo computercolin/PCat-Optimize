@@ -11,6 +11,7 @@ using namespace DNest3;
 
 int main(int argc, char** argv)
 {
+	//TODO clean up main using DNest3 Start.h
 	CommandLineOptions options(argc, argv);
 
 	std::cout<<"# Using "<<options.get_numThreads()<<" thread"<<
@@ -27,7 +28,7 @@ int main(int argc, char** argv)
 
 	// Load sampler options from file
 	// Added option to specify output file name
-	MyOptions samplerOptions(options.get_configFile().c_str());
+	MyOptions samplerOptions(options.get_configFile().c_str(), options.set_gzip());
 
 	// Load data; must be done before sampler created
         Data::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
