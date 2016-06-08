@@ -19,7 +19,7 @@ void Data::load(const char* counts_file, const char* exposure_file, const char* 
         if (!fin)
                 cerr<<"# ERROR: couldn't open file "<<pixel_file<<"."<<endl;
 	fin>>npix>>nbin>>npsf; // read number of pixels, bins, and PSF classes
-	fin>>lmin>>lmax>>bmin>>bmax; // read l, b bounds
+	fin>>lmin>>lmax>>bmin>>bmax>>pixel_area; // read l, b bounds, pixel area
         l_rays.assign(npix, 0);
         b_rays.assign(npix, 0);
         double junk;

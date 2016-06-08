@@ -15,7 +15,10 @@ class Data
 		// Number of templates
 		int ntem;
 
+		// bounds on longitude and latitude
 		double lmin, lmax, bmin, bmax;
+		// pixel area, in steradians
+		double pixel_area;
 
 		// Coordinates of pixel centers
 		std::vector< double > l_rays;
@@ -40,6 +43,7 @@ class Data
 		double get_lmax() const { return lmax; }
 		double get_bmin() const { return bmin; }
 		double get_bmax() const { return bmax; }
+		double get_pixel_area() const { return pixel_area; }
 		const std::vector< double >& get_l_rays() const
 			{ return l_rays; }
 		const std::vector< double >& get_b_rays() const

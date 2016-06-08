@@ -54,8 +54,7 @@ void MyModel::fromPrior()
 void MyModel::update_lambdas(){
         const vector< double >& exposure = Data::get_instance().get_exposure();
         const vector< double >& etemplate = Data::get_instance().get_etemplate();
-        // HARDCODED nside
-        const double pixel_area = 4 * M_PI / (12. * 256. * 256.);
+        const double pixel_area = Data::get_instance().get_pixel_area();
         
         for (int i=0; i<Data::get_instance().get_nbin(); i++){
         	for (int ii=0; ii<Data::get_instance().get_npsf(); ii++){
