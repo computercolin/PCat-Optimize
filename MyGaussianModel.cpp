@@ -64,7 +64,7 @@ void MyGaussianModel::print(std::ostream& out) const
 	}
 }
 
-string MyModel::description() const
+string MyGaussianModel::description() const
 {
 	return string("pixel lambdas | ndim, maxN, flux distribution fmax, norm, gamma | color mean, sdev | N, point sources | isotropic backgrounds | template coefficients | PSF score, stail, gtail, fcore | staleness | gains");
 }
