@@ -9,7 +9,7 @@
 
 class MyModel:public DNest3::Model
 {
-	private:
+	protected:
 		MyRJObject<MyDistribution> objects;
 
 		// The model source flux image
