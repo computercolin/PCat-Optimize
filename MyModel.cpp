@@ -249,6 +249,6 @@ void MyModel::print(std::ostream& out) const
 
 string MyModel::description() const
 {
-	return string("pixel lambdas | flux distribution fmax, norm, gamma | color mean, sdev | point sources | isotropic backgrounds | template coefficients | PSF score, gcore, stail, gtail | staleness");
+	return string("pixel lambdas | ndim, maxN, flux distribution fmax, norm, gamma | color mean, sdev | N, point sources | isotropic backgrounds | template coefficients | PSF score, stail, gtail, fcore | staleness");
 }
 
