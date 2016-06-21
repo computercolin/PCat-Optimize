@@ -36,7 +36,7 @@ double MyGaussianModel::perturb()
 		gain[i] = log(gain[i]);
 		gain[i] += log(gain_max/gain_min)*randh();
 		gain[i] = mod(gain[i] - log(gain_min), log(gain_max/gain_min)) + log(gain_min);
-		bg[i] = exp(gain[i]);
+		gain[i] = exp(gain[i]);
 		return 0; // proposal respects prior
 	}
 }
