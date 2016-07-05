@@ -23,7 +23,11 @@ void ModelOptions::load(const char* modeloptions_file)
 	fin>>nmax>>fixed;
 	fin>>fluxlo>>fluxhi_min;
 	fin>>fluxnorm>>norm_min>>norm_max>>midbin;
-	fin>>smin>>smax>>slim;
+	fin>>smin>>smax;
+	slim.assign(Data::get_instance().get_nbin(), 0);
+	for (int i=0; i<Data::get_instance().get_nbin(); i++){
+		fin>>slim[i];
+	}
 	fin>>bg_min>>bg_max;
 	int ntem = Data::get_instance().get_ntem();
 	tem_min.assign(ntem, 0);
@@ -40,7 +44,11 @@ void ModelOptions::load(const char* modeloptions_file)
 	cout<<"# Using flux upper limit above "<<fluxhi_min<<" ph cm^-2 s^-1"<<endl;
 	cout<<"# Using normalization at "<<fluxnorm<<" ph cm^-2 s^-1 between "<<norm_min<<" and "<<norm_max<<endl;
 	cout<<"# Applying flux limits to energy bin "<<midbin<<endl;
-	cout<<"# Using PSF radii between "<<smin<<" and "<<smax<<", limiting PSF evaluation to "<<slim<<endl;
+	cout<<"# Using PSF radii between "<<smin<<" and "<<smax<<", limiting PSF evaluation to";
+	for (int i=0; i<Data::get_instance().get_nbin(); i++){
+		cout<<" "<<slim[i];
+	}
+	cout<<endl;
 	cout<<"# Using background between "<<bg_min<<" and "<<bg_max<<" ph cm^-2 s^-1 sr^-1"<<endl;
 	for (int i=0; i<Data::get_instance().get_ntem(); i++){
 		cout<<"# Using template "<<i<<" between "<<tem_min[i]<<" and "<<tem_max[i]<<endl;

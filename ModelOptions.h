@@ -25,7 +25,7 @@ class ModelOptions
 		// bounds on PSF radii (in radians)
 		double smin, smax;
 		// bound on PSF evaluation
-		double slim;
+		std::vector<double> slim;
 		// bounds on background (ph cm^-2 s^-1 sr^-1)
 		double bg_min, bg_max;
 		// bounds on templates
@@ -38,7 +38,7 @@ class ModelOptions
 		MyRJObject<MyDistribution> objects();
 		double get_smin() { return smin; }
 		double get_smax() { return smax; }
-		double get_slim() { return slim; }
+		std::vector<double>& get_slim() { return slim; }
 		double get_bg_min() { return bg_min; }
 		double get_bg_max() { return bg_max; }
 		std::vector<double>& get_tem_min() { return tem_min; }

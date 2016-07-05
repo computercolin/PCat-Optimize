@@ -56,8 +56,8 @@ void Data::load(const char* counts_file, const char* exposure_file, const char* 
 	if (!fin)
 		cerr<<"# ERROR: couldn't open file"<<etemplate_file<<"."<<endl;
 	fin>>ntem;
-	etemplate.assign(nbin*ntem*npix, 0);
-	for (int i=0; i<nbin*ntem*npix; i++)
+	etemplate.assign(ntem*nbin*npsf*npix, 0);
+	for (int i=0; i<ntem*nbin*npsf*npix; i++)
 		fin>>etemplate[i];
 	fin.close();
 }

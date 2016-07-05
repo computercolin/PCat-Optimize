@@ -60,10 +60,10 @@ void MyModel::update_lambdas(){
         	for (int ii=0; ii<Data::get_instance().get_npsf(); ii++){
 			int jpsf = i*Data::get_instance().get_npsf() + ii;
         	        for (int iii=0; iii<Data::get_instance().get_npix(); iii++){
-        	                int jimg = i*Data::get_instance().get_npsf()*Data::get_instance().get_npix() + ii*Data::get_instance().get_npix() + iii;
+        	                int jimg = jpsf*Data::get_instance().get_npix() + iii;
                                 lambda[jimg] = image[jimg] + bg[jpsf];
                                 for (int iv=0; iv<Data::get_instance().get_ntem(); iv++){
-          	                      int jetemplate = iv*Data::get_instance().get_nbin()*Data::get_instance().get_npix() + i*Data::get_instance().get_npix() + iii;
+          	                      int jetemplate = iv*Data::get_instance().get_nbin()*Data::get_instance().get_npsf()*Data::get_instance().get_npix() + jimg;
                                       lambda[jimg] += tem[iv]*etemplate[jetemplate];
                                 }
                                 lambda[jimg] *= exposure[jimg] * pixel_area;
@@ -125,9 +125,9 @@ void MyModel::calculate_image()
 		double yc = cos(bc) * sin(lc);
 		double zc = sin(bc);
 
-		const double coslim = cos(lim);
 		for (int i=0; i<Data::get_instance().get_nbin(); i++){
 			M = (*component)[2+i]; //assumes flux bins with independent intensities
+			double coslim = cos(lim[i]);
 			for (int ii=0; ii<Data::get_instance().get_npsf(); ii++){
 				int jpsf = i*Data::get_instance().get_npsf() + ii;
 				double sc = score[jpsf];
