@@ -125,9 +125,6 @@ void MyModel::calculate_image()
 double MyModel::perturb()
 {
 	double logH = 0.;
-	// see comment below
-	int oldN = objects.get_components().size();
-	logH -= objects.get_dist().log_pn(oldN);
 
 	double r = randomU();
 	if(r <= 0.97)
@@ -159,15 +156,6 @@ double MyModel::perturb()
 		staleness = 100; // force complete recalculation (and circumvent RJObject added/removed component arrays)
 		calculate_image();
 	}
-
-	// TODO we edited RJObject anyhow...
-	// this is HACKY, but it allows us to avoid editing RJObject
-	// if number of components or hyperparameters change
-	// need term from ratio of P(N | norm, fmin, fmax, a)
-	// if only components have moved, this term is unnecessary
-	// but should be zero
-	int newN = objects.get_components().size();
-	logH += objects.get_dist().log_pn(newN);
 
 	return logH;
 }

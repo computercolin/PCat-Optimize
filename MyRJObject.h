@@ -32,13 +32,16 @@ double MyRJObject<Distribution>::perturb()
 
 	if(which == 0)
 	{
+		logH -= this->get_dist().log_pn(this->num_components);
 		// Do some birth or death
 		logH += this->perturb_num_components(
 				pow(10., - 6.*DNest3::randomU()));
+		logH += this->get_dist().log_pn(this->num_components);
 	}
 	else if(which == 1)
 	{
 		// Change the hyperparameters
+		logH -= this->get_dist().log_pn(this->num_components);
 		if(DNest3::randomU() <= 0.97)
 		{
 			logH += this->dist.perturb1(this->components, this->u_components);
@@ -49,6 +52,7 @@ double MyRJObject<Distribution>::perturb()
 			logH += this->dist.perturb2(this->components, this->u_components);
 			this->added = this->components;
 		}
+		logH += this->get_dist().log_pn(this->num_components);
 	}
 	else if(which == 2)
 	{
