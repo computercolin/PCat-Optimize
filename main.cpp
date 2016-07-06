@@ -1,17 +1,19 @@
 #include <iostream>
 #include <CommandLineOptions.h>
 #include <MTSampler.h>
-#include "ModelOptions.h"
+#include "FermiModelOptions.h"
 #include "MyOptions.h"
-#include "MyModel.h"
-#include "Data.h"
+#include "FermiModel.h"
+#include "FermiData.h"
+#include "SloanModelOptions.h"
+#include "SloanData.h"
+#include "SloanModel.h"
 
 using namespace std;
 using namespace DNest3;
 
 int main(int argc, char** argv)
 {
-	//TODO clean up main using DNest3 Start.h
 	CommandLineOptions options(argc, argv);
 
 	std::cout<<"# Using "<<options.get_numThreads()<<" thread"<<
@@ -31,16 +33,22 @@ int main(int argc, char** argv)
 	MyOptions samplerOptions(options.get_configFile().c_str(), options.set_gzip());
 
 	// Load data; must be done before sampler created
-        Data::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
+        /*FermiData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
                                 ("Data/"+options.get_dataFile()+"_exp.txt").c_str(),
 				("Data/"+options.get_dataFile()+"_pix.txt").c_str(),
-				("Data/"+options.get_dataFile()+"_tem.txt").c_str());
+				("Data/"+options.get_dataFile()+"_tem.txt").c_str());*/
+	SloanData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
+                                ("Data/"+options.get_dataFile()+"_psf.txt").c_str(),
+                                ("Data/"+options.get_dataFile()+"_pix.txt").c_str());
 
 	// Load model options from file
-	ModelOptions::get_instance().load(("run-"+options.get_configFile()+"/OPTIONS-MODEL").c_str());
+	//FermiModelOptions::get_instance().load(("run-"+options.get_configFile()+"/OPTIONS-MODEL").c_str());
+	SloanModelOptions::get_instance().load(("run-"+options.get_configFile()+"/OPTIONS-MODEL").c_str());
 
 	// Create sampler
-	MTSampler<MyModel> sampler(options.get_numThreads(),
+	//MTSampler<FermiModel>
+	MTSampler<SloanModel>
+					sampler(options.get_numThreads(),
 					options.get_compression_double(),
 					samplerOptions);
 

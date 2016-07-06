@@ -2,32 +2,33 @@
 #include <RandomNumberGenerator.h>
 #include <Utils.h>
 #include <cmath>
-#include "Data.h"
 #include <boost/math/special_functions/erf.hpp>
 #include <iostream>
 
 using namespace DNest3;
 
 MyDistribution::MyDistribution(double l_min, double l_max,
-					double b_min, double b_max,
+					double b_min, double b_max, bool radec,
 					double fluxlo,
 					double fluxhi_min,
 					double flux_norm,
 					double norm_min, double norm_max,
-					int midbin)
+					int nbin, int midbin)
 :l_min(l_min)
 ,l_max(l_max)
 ,b_min(b_min)
 ,b_max(b_max)
+,radec(radec)
 ,fluxlo(fluxlo)
 ,fluxhi_min(fluxhi_min)
 ,flux_norm(flux_norm)
 ,norm_min(norm_min)
 ,norm_max(norm_max)
+,nbin(nbin)
 ,midbin(midbin)
 ,sdev_color_scale(1.)
-,mean_colors(Data::get_instance().get_nbin() - 1)
-,sdev_colors(Data::get_instance().get_nbin() - 1)
+,mean_colors(nbin - 1)
+,sdev_colors(nbin - 1)
 {
 
 }
@@ -37,7 +38,7 @@ void MyDistribution::fromPrior()
 	fluxhi = fluxhi_min / randomU();
 	norm = exp(log(norm_min) + log(norm_max/norm_min)*randomU());
 	gamma = randomU();
-	for (int i=0; i<Data::get_instance().get_nbin()-1; i++){
+	for (int i=0; i<nbin-1; i++){
 		mean_colors[i] = tan(M_PI * (randomU() - 0.5)); // full Cauchy
 		sdev_colors[i] = sdev_color_scale * tan(0.5 * M_PI * randomU()); //half Cauchy
 	}
@@ -47,7 +48,7 @@ double MyDistribution::perturb_parameters()
 {
 	double logH = 0.;
 
-	int which = randInt(Data::get_instance().get_nbin() > 1 ? 4 : 3);
+	int which = randInt(nbin > 1 ? 4 : 3);
 
         if(which == 0)
         {
@@ -70,7 +71,7 @@ double MyDistribution::perturb_parameters()
 		gamma = mod(gamma, 1.);
 	}
 	else if(which == 3){
-		int i = randInt(Data::get_instance().get_nbin()-1);
+		int i = randInt(nbin-1);
 		mean_colors[i] = atan(mean_colors[i]) / M_PI + 0.5;
 		mean_colors[i] += randh();
 		mean_colors[i] = mod(mean_colors[i], 1.);
@@ -84,7 +85,7 @@ double MyDistribution::perturb_parameters()
 	return logH;
 }
 
-// kind of hacky... returns P(N | this distribution)
+// not hacky if we use the fact that we modified RJObject
 double MyDistribution::log_pn(const int n) const
 {
 	// alpha = a - 1
@@ -93,7 +94,6 @@ double MyDistribution::log_pn(const int n) const
 	return n * log(navg) - navg - lgamma(n + 1);
 }
 
-// x, y, flux
 double MyDistribution::log_pdf(const std::vector<double>& vec) const
 {
 	// alpha = a - 1
@@ -103,7 +103,7 @@ double MyDistribution::log_pdf(const std::vector<double>& vec) const
 	}
 
 	double logp = 0;
-	for (int i=0; i<Data::get_instance().get_nbin(); i++){
+	for (int i=0; i<nbin; i++){
 		int ii = (i < midbin) ? i : i - 1;
 		if (i == midbin){
 			if (vec[2+i] < fluxlo || vec[2+i] > fluxhi){
@@ -126,20 +126,20 @@ double MyDistribution::log_pdf(const std::vector<double>& vec) const
 	return logp;
 }
 
-double MyDistribution::angular_area() const
-{
-	return (sin(b_max) - sin(b_min)) * (l_max - l_min);
-}
-
 void MyDistribution::from_uniform(std::vector<double>& vec) const
 {
 	// alpha = a - 1
 	double alpha = 1./gamma - 1.;
 
 	vec[0] = l_min + (l_max - l_min)*vec[0];
-	vec[1] = asin(sin(b_min) + (sin(b_max) - sin(b_min))*vec[1]);
+	if (radec){
+		vec[1] = asin(sin(b_min) + (sin(b_max) - sin(b_min))*vec[1]);
+	}
+	else{
+		vec[1] = b_min + (b_max - b_min)*vec[1];
+	}
 	vec[2+midbin] = fluxlo*pow(1. + (pow(fluxlo/fluxhi, alpha) - 1.) * vec[2+midbin], -1./alpha);
-	for (int i=0; i<Data::get_instance().get_nbin(); i++){
+	for (int i=0; i<nbin; i++){
 		int ii = (i < midbin) ? i : i - 1;
 		if (i != midbin) {
 			double colour;
@@ -155,8 +155,13 @@ void MyDistribution::to_uniform(std::vector<double>& vec) const
 	double alpha = 1./gamma - 1.;
 
 	vec[0] = (vec[0] - l_min)/(l_max - l_min);
-	vec[1] = (sin(vec[1]) - sin(b_min))/(sin(b_max) - sin(b_min));
-	for (int i=0; i<Data::get_instance().get_nbin(); i++){
+	if (radec){
+		vec[1] = (sin(vec[1]) - sin(b_min))/(sin(b_max) - sin(b_min));
+	}
+	else{
+		vec[1] = (vec[1] - b_min)/(b_max - b_min);
+	}
+	for (int i=0; i<nbin; i++){
 		int ii = (i < midbin) ? i : i - 1;
 		if (i != midbin){
 			double colour = vec[2+i] / vec[2+midbin];
@@ -169,8 +174,12 @@ void MyDistribution::to_uniform(std::vector<double>& vec) const
 void MyDistribution::print(std::ostream& out) const
 {
 	out<<fluxhi<<' '<<norm<<' '<<gamma<<' ';
-	for (int i=0; i<Data::get_instance().get_nbin()-1; i++){
+	for (int i=0; i<nbin-1; i++){
 		out<<mean_colors[i]<<' '<<sdev_colors[i]<<' ';
 	}
 }
 
+std::string MyDistribution::description() const
+{
+	return std::string(" | flux distribution fmax, norm, gamma | mean colour, sdev colour for each band");
+}

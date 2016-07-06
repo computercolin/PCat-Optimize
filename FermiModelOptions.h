@@ -1,10 +1,10 @@
-#ifndef _ModelOptions_
-#define _ModelOptions_
+#ifndef _FermiModelOptions_
+#define _FermiModelOptions_
 
 #include "MyRJObject.h"
 #include "MyDistribution.h"
 
-class ModelOptions
+class FermiModelOptions
 {
 	private:
 		// if fixed: nmax is number of sources
@@ -33,7 +33,7 @@ class ModelOptions
 		std::vector<double> tem_max;
 
 	public:
-		ModelOptions();
+		FermiModelOptions();
 		void load(const char* modeloptions_file);
 		MyRJObject<MyDistribution> objects();
 		double get_smin() { return smin; }
@@ -47,9 +47,9 @@ class ModelOptions
 
 	// Singleton
 	private:
-		static ModelOptions instance;
+		static FermiModelOptions instance;
 	public:
-		static ModelOptions& get_instance() { return instance; }
+		static FermiModelOptions& get_instance() { return instance; }
 };
 
 #endif

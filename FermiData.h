@@ -1,9 +1,9 @@
-#ifndef _Data_
-#define _Data_
+#ifndef _FermiData_
+#define _FermiData_
 
 #include <vector>
 
-class Data
+class FermiData
 {
 	private:
 		// Number of pixels
@@ -31,7 +31,7 @@ class Data
 		std::vector< double > etemplate;
 
 	public:
-		Data();
+		FermiData();
 		void load(const char* image_file, const char* exposure_file, const char* pixel_file, const char* etemplate_file);
 
 		// Getters
@@ -59,9 +59,9 @@ class Data
 
 	// Singleton
 	private:
-		static Data instance;
+		static FermiData instance;
 	public:
-		static Data& get_instance() { return instance; }
+		static FermiData& get_instance() { return instance; }
 };
 
 #endif

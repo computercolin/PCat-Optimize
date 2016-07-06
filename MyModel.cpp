@@ -1,69 +1,62 @@
 #include "MyModel.h"
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
-#include "Data.h"
 #include <cmath>
+#include <vector>
 
 using namespace std;
 using namespace DNest3;
 
-MyModel::MyModel()
-:objects(ModelOptions::get_instance().objects())
-,image(Data::get_instance().get_nbin() * Data::get_instance().get_npsf() * Data::get_instance().get_npix())
-,lambda(Data::get_instance().get_nbin() * Data::get_instance().get_npsf() * Data::get_instance().get_npix())
+MyModel::MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npix, double pixel_area,
+	vector<double> data, vector<double> exposure, double bg_min, double bg_max,
+	int ntem, vector<double> tem_min, vector<double> tem_max, vector<double> etemplate)
+:objects(objects)
+,nbin(nbin)
+,npsf(npsf)
+,npix(npix)
+,pixel_area(pixel_area)
+,data(data)
+,exposure(exposure)
+,image(nbin*npsf*npix)
+,lambda(nbin*npsf*npix)
 ,staleness(100) // start stale
-,bg_min(ModelOptions::get_instance().get_bg_min())
-,bg_max(ModelOptions::get_instance().get_bg_max())
-,bg(Data::get_instance().get_nbin()*Data::get_instance().get_npsf())
-,tem_min(ModelOptions::get_instance().get_tem_min())
-,tem_max(ModelOptions::get_instance().get_tem_max())
-,tem(Data::get_instance().get_ntem())
-,s_min(ModelOptions::get_instance().get_smin())
-,s_max(ModelOptions::get_instance().get_smax())
-,lim(ModelOptions::get_instance().get_slim())
-,score(Data::get_instance().get_nbin() * Data::get_instance().get_npsf())
-,stail(Data::get_instance().get_nbin() * Data::get_instance().get_npsf())
-,gtail(Data::get_instance().get_nbin() * Data::get_instance().get_npsf())
-,fcore(Data::get_instance().get_nbin() * Data::get_instance().get_npsf())
+,bg_min(bg_min)
+,bg_max(bg_max)
+,bg(nbin*npsf)
+,ntem(ntem)
+,tem_min(tem_min)
+,tem_max(tem_max)
+,tem(ntem)
+,etemplate(etemplate)
 {
 }
+
 
 void MyModel::fromPrior()
 {
 	objects.fromPrior();
-	for (int i=0; i<Data::get_instance().get_nbin(); i++){
-		for (int j=0; j<Data::get_instance().get_npsf(); j++){
-			int jpsf = i*Data::get_instance().get_npsf() + j;
+	for (int i=0; i<nbin; i++){
+		for (int j=0; j<npsf; j++){
+			int jpsf = i*npsf + j;
 			bg[jpsf] = exp(log(bg_min) + log(bg_max/bg_min)*randomU());
-			score[jpsf] = exp(log(s_min) + log(s_max/s_min)*randomU());
-			stail[jpsf] = 0;
-			while (stail[jpsf] < score[jpsf]){
-				stail[jpsf] = exp(log(s_min) + log(s_max/s_min)*randomU());
-			}
-			gtail[jpsf] = 1. / randomU();
-			fcore[jpsf] = randomU();
 		}
 	}
 
-	for (int i=0; i<Data::get_instance().get_ntem(); i++){
+	for (int i=0; i<ntem; i++){
 		tem[i] = exp(log(tem_min[i]) + log(tem_max[i]/tem_min[i])*randomU());
 	}
 	calculate_image();
 }
 
 void MyModel::update_lambdas(){
-        const vector< double >& exposure = Data::get_instance().get_exposure();
-        const vector< double >& etemplate = Data::get_instance().get_etemplate();
-        const double pixel_area = Data::get_instance().get_pixel_area();
-        
-        for (int i=0; i<Data::get_instance().get_nbin(); i++){
-        	for (int ii=0; ii<Data::get_instance().get_npsf(); ii++){
-			int jpsf = i*Data::get_instance().get_npsf() + ii;
-        	        for (int iii=0; iii<Data::get_instance().get_npix(); iii++){
-        	                int jimg = jpsf*Data::get_instance().get_npix() + iii;
+        for (int i=0; i<nbin; i++){
+        	for (int ii=0; ii<npsf; ii++){
+			int jpsf = i*npsf + ii;
+        	        for (int iii=0; iii<npix; iii++){
+        	                int jimg = jpsf*npix + iii;
                                 lambda[jimg] = image[jimg] + bg[jpsf];
-                                for (int iv=0; iv<Data::get_instance().get_ntem(); iv++){
-          	                      int jetemplate = iv*Data::get_instance().get_nbin()*Data::get_instance().get_npsf()*Data::get_instance().get_npix() + jimg;
+                                for (int iv=0; iv<ntem; iv++){
+          	                      int jetemplate = iv*nbin*npsf*npix + jimg;
                                       lambda[jimg] += tem[iv]*etemplate[jetemplate];
                                 }
                                 lambda[jimg] *= exposure[jimg] * pixel_area;
@@ -74,9 +67,6 @@ void MyModel::update_lambdas(){
 
 void MyModel::calculate_image()
 {
-	// Get coordinate stuff from data
-	const vector< vector < double > >& unit_vectors = Data::get_instance().get_unit_vectors();
-
 	// Components
 	const vector< vector<double> >& components = objects.get_components();
 
@@ -93,10 +83,10 @@ void MyModel::calculate_image()
 	{
 		staleness = 0;
 		// Zero the image
-		image.assign(Data::get_instance().get_nbin()*Data::get_instance().get_npsf()*Data::get_instance().get_npix(), 0);
+		image.assign(nbin*npsf*npix, 0);
 	}
 
-	double lc, bc, M;
+	double xc, yc, M;
 
 	const vector<double>* component;
 	double coeff = 1.; // switches to -1 for removing components
@@ -119,29 +109,12 @@ void MyModel::calculate_image()
 		else
 			component = &(components[k]);
 
-		lc = (*component)[0]; bc = (*component)[1];
-		// unit vector
-		double xc = cos(bc) * cos(lc);
-		double yc = cos(bc) * sin(lc);
-		double zc = sin(bc);
+		xc = (*component)[0]; yc = (*component)[1];
 
-		for (int i=0; i<Data::get_instance().get_nbin(); i++){
-			M = (*component)[2+i]; //assumes flux bins with independent intensities
-			double coslim = cos(lim[i]);
-			for (int ii=0; ii<Data::get_instance().get_npsf(); ii++){
-				int jpsf = i*Data::get_instance().get_npsf() + ii;
-				double sc = score[jpsf];
-				double isc = 1./sc;
-				double ist = 1./stail[jpsf];
-				double igt = 1./gtail[jpsf];
-				for (int iii=0; iii<Data::get_instance().get_npix(); iii++){
-					int jimg = i*Data::get_instance().get_npsf()*Data::get_instance().get_npix() + ii*Data::get_instance().get_npix() + iii;
-					double cosdt = unit_vectors[iii][0] * xc + unit_vectors[iii][1] * yc + unit_vectors[iii][2] * zc;
-					if (cosdt > coslim){
-						image[jimg] += coeff*M*fcore[jpsf]/(2.*M_PI)*isc*isc*exp(-(1-cosdt)*isc*isc);
-						image[jimg] += coeff*M*(1.-fcore[jpsf])/(2.*M_PI)*ist*ist*(1.-igt)*pow(1.+(1-cosdt)*igt*ist*ist,-gtail[jpsf]);
-					}
-				}
+		for (int i=0; i<nbin; i++){
+			M = (*component)[2+i]; //assumes components are x,y,fluxes
+			for (int ii=0; ii<npsf; ii++){
+				add_source_flux(i, ii, xc, yc, coeff*M);
 			}
 		}
 	}
@@ -164,7 +137,7 @@ double MyModel::perturb()
 	}
 	else if (r <= 0.98)
 	{
-		int i = randInt(Data::get_instance().get_nbin()*Data::get_instance().get_npsf());
+		int i = randInt(nbin*npsf);
 		bg[i] = log(bg[i]);
 		bg[i] += log(bg_max/bg_min)*randh();
 		bg[i] = mod(bg[i] - log(bg_min), log(bg_max/bg_min)) + log(bg_min);
@@ -173,7 +146,7 @@ double MyModel::perturb()
 	}
 	else if (r <= 0.99)
 	{
-		int i = randInt(Data::get_instance().get_ntem());
+		int i = randInt(ntem);
 		tem[i] = log(tem[i]);
 		tem[i] += log(tem_max[i]/tem_min[i])*randh();
 		tem[i] = mod(tem[i] - log(tem_min[i]), log(tem_max[i]/tem_min[i])) + log(tem_min[i]);
@@ -182,29 +155,12 @@ double MyModel::perturb()
 	}
 	else
 	{
-		int jpsf = randInt(Data::get_instance().get_nbin()*Data::get_instance().get_npsf());
-		score[jpsf] = log(score[jpsf]);
-		score[jpsf] += log(s_max/s_min)*randh();
-		score[jpsf] = mod(score[jpsf] - log(s_min), log(s_max/s_min)) + log(s_min);
-		score[jpsf] = exp(score[jpsf]);
-		stail[jpsf] = log(stail[jpsf]);
-		stail[jpsf] += log(s_max/s_min)*randh();
-		stail[jpsf] = mod(stail[jpsf] - log(s_min), log(s_max/s_min)) + log(s_min);
-		stail[jpsf] = exp(stail[jpsf]);
-		gtail[jpsf] = 1./gtail[jpsf];
-		gtail[jpsf] = mod(gtail[jpsf] + randh(), 1.);
-		gtail[jpsf] = 1./gtail[jpsf];
-
-		fcore[jpsf] = mod(fcore[jpsf] + randh(), 1.);
-
-		if (stail[jpsf] < score[jpsf]){
-			return -1E300;
-		}
+		// perturb PSF
 		staleness = 100; // force complete recalculation (and circumvent RJObject added/removed component arrays)
 		calculate_image();
 	}
 
-	// TODO Edit RJObject anyways?
+	// TODO we edited RJObject anyhow...
 	// this is HACKY, but it allows us to avoid editing RJObject
 	// if number of components or hyperparameters change
 	// need term from ratio of P(N | norm, fmin, fmax, a)
@@ -218,11 +174,9 @@ double MyModel::perturb()
 
 double MyModel::logLikelihood() const
 {
-	const vector< double >& data = Data::get_instance().get_image();
-
 	double logL = 0.;
-        for (int i=0; i<Data::get_instance().get_nbin()*Data::get_instance().get_npsf()*Data::get_instance().get_npix(); i++){
-		logL += data[i]*log(lambda[i]) - lambda[i];
+        for (int i=0; i<nbin*npsf*npix; i++){
+		logL += pixelLogLikelihood(data[i], lambda[i]);
 	}
 
 	return logL;
@@ -235,20 +189,16 @@ void MyModel::print(std::ostream& out) const
 		out<<lambda[i]<<' ';
 	out<<setprecision(10);
 	objects.print(out); out<<' ';
-	for(int i=0; i<Data::get_instance().get_nbin()*Data::get_instance().get_npsf(); i++){
+	for(int i=0; i<nbin*npsf; i++){
 		out<<bg[i]<<' ';
 	}
-	for(int i=0; i<Data::get_instance().get_ntem(); i++){
+	for(int i=0; i<ntem; i++){
 		out<<tem[i]<<' ';
 	}
-	for(int i=0; i<Data::get_instance().get_nbin()*Data::get_instance().get_npsf(); i++){
-		out<<score[i]<<' '<<stail[i]<<' '<<gtail[i]<<' '<<fcore[i]<<' ';
-	}
-	out<<staleness<<' ';
+	out<<staleness;
 }
 
 string MyModel::description() const
 {
-	return string("pixel lambdas | ndim, maxN, flux distribution fmax, norm, gamma | color mean, sdev | N, point sources | isotropic backgrounds | template coefficients | PSF score, stail, gtail, fcore | staleness");
+	return string("pixel lambdas | ndim, maxN"+objects.get_dist().description()+" | N, point sources | isotropic backgrounds | template coefficients | PSF score, stail, gtail, fcore | staleness");
 }
-

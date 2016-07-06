@@ -1,18 +1,18 @@
-#include "Data.h"
+#include "FermiData.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
 
 using namespace std;
 
-Data Data::instance;
+FermiData FermiData::instance;
 
-Data::Data()
+FermiData::FermiData()
 {
 
 }
 
-void Data::load(const char* counts_file, const char* exposure_file, const char* pixel_file, const char* etemplate_file)
+void FermiData::load(const char* counts_file, const char* exposure_file, const char* pixel_file, const char* etemplate_file)
 {
 	fstream fin(pixel_file, ios::in);
 	// pixel file

@@ -4,21 +4,29 @@
 #include <Model.h>
 #include <vector>
 #include "MyRJObject.h"
-#include "ModelOptions.h"
 #include "MyDistribution.h"
 
-class MyModel:public DNest3::Model
+using namespace std;
+
+class MyModel : public DNest3::Model
 {
 	protected:
 		MyRJObject<MyDistribution> objects;
 
+		int nbin, npsf, npix;
+		double pixel_area;
+		std::vector<double> data;
+		std::vector<double> exposure;
 		// The model source flux image
-		std::vector<long double> image;
+		std::vector<double> image;
+		// not sure what visibility the next two methods should have
 		void update_lambdas();
-		void calculate_image();
+		void calculate_image(); // this should be protected so FermiModel PSF changes can recalculate images from scratch
 		// The model total image
-		std::vector<long double> lambda;
+		std::vector<double> lambda;
 
+		virtual void add_source_flux(int ibin, int ipsf, double xc, double yc, double M) = 0;
+		virtual double pixelLogLikelihood(double data, double lambda) const = 0;
 		// How many steps since image was computed from scratch
 		int staleness;
 
@@ -27,19 +35,15 @@ class MyModel:public DNest3::Model
 		std::vector<double> bg;
 
                 // emission templates
+                int ntem;
                 std::vector<double> tem_min;
 		std::vector<double> tem_max;
-                std::vector<double> tem;
-
-		// PSF
-		double s_min, s_max; // same prior bounds for all energy bins and PSF classes
-		std::vector<double> lim;
-		std::vector<double> score;
-		std::vector<double> stail;
-		std::vector<double> gtail;
-		std::vector<double> fcore;
+                std::vector<double> tem; // coefficients
+		std::vector<double> etemplate; //actual templates
 	public:
-		MyModel();
+		MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npix, double pixel_area,
+			vector<double> data, vector<double> exposure, double bg_min, double bg_max,
+			int ntem, vector<double> tem_min, vector<double> tem_max, vector<double> etemplate);
 
 		// Generate the point from the prior
 		void fromPrior();
@@ -58,4 +62,3 @@ class MyModel:public DNest3::Model
 };
 
 #endif
-
