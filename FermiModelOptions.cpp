@@ -15,27 +15,27 @@ FermiModelOptions::FermiModelOptions()
 
 }
 
-void FermiModelOptions::load(const char* modeloptions_file)
+void FermiModelOptions::load(ptree pt)
 {
-	fstream fin(modeloptions_file, ios::in);
-	if(!fin)
-		cerr<<"# ERROR: couldn't open file "<<modeloptions_file<<"."<<endl;
-	fin>>nmax>>fixed;
-	fin>>fluxlo>>fluxhi_min;
-	fin>>fluxnorm>>norm_min>>norm_max>>midbin;
-	fin>>smin>>smax;
-	slim.assign(FermiData::get_instance().get_nbin(), 0);
-	for (int i=0; i<FermiData::get_instance().get_nbin(); i++){
-		fin>>slim[i];
-	}
-	fin>>bg_min>>bg_max;
-	int ntem = FermiData::get_instance().get_ntem();
-	tem_min.assign(ntem, 0);
-	tem_max.assign(ntem, 0);
-	for (int i=0; i<FermiData::get_instance().get_ntem(); i++){
-		fin>>tem_min[i]>>tem_max[i];
-	}
-	fin.close();
+	nmax = pt.get<int>("modeloptions.nmax");
+	fixed = pt.get<bool>("modeloptions.nfixed");
+	fluxlo = pt.get<double>("modeloptions.fmin");
+	fluxhi_min = pt.get<double>("modeloptions.fmax_lo");
+	fluxnorm = pt.get<double>("modeloptions.fnorm");
+	norm_min = pt.get<double>("modeloptions.norm_lo");
+	norm_max = pt.get<double>("modeloptions.norm_hi");
+	midbin = pt.get<int>("modeloptions.midbin");
+	smin = pt.get<double>("modeloptions.sigma_lo");
+	smax = pt.get<double>("modeloptions.sigma_hi");
+	BOOST_FOREACH(ptree::value_type &v, pt.get_child("modeloptions.eval_lims"))
+		slim.push_back(v.second.get_value<double>());
+	bg_min = pt.get<double>("modeloptions.background_lo");
+	bg_max = pt.get<double>("modeloptions.background_hi");
+	BOOST_FOREACH(ptree::value_type &v, pt.get_child("modeloptions.template_los"))
+		tem_min.push_back(v.second.get_value<double>());
+	BOOST_FOREACH(ptree::value_type &v, pt.get_child("modeloptions.template_his"))
+		tem_max.push_back(v.second.get_value<double>());
+
 	cout<<"# Using "<<FermiData::get_instance().get_npix()<<" pixels"<<endl;
 	cout<<"# Using "<<FermiData::get_instance().get_nbin()<<" energy bins"<<endl;
 	cout<<"# Using "<<FermiData::get_instance().get_npsf()<<" PSF classes"<<endl;

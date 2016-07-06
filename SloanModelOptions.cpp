@@ -15,15 +15,19 @@ SloanModelOptions::SloanModelOptions()
 
 }
 
-void SloanModelOptions::load(const char* modeloptions_file)
+void SloanModelOptions::load(ptree pt)
 {
-	fstream fin(modeloptions_file, ios::in);
-	if(!fin)
-		cerr<<"# ERROR: couldn't open file "<<modeloptions_file<<"."<<endl;
-	fin>>nmax>>fixed;
-	fin>>fluxlo>>fluxhi_min;
-	fin>>fluxnorm>>norm_min>>norm_max>>midbin;
-	fin>>bg_min>>bg_max;
+	nmax = pt.get<int>("modeloptions.nmax");
+	fixed = pt.get<bool>("modeloptions.nfixed");
+	fluxlo = pt.get<double>("modeloptions.fmin");
+	fluxhi_min = pt.get<double>("modeloptions.fmax_lo");
+	fluxnorm = pt.get<double>("modeloptions.fnorm");
+	norm_min = pt.get<double>("modeloptions.norm_lo");
+	norm_max = pt.get<double>("modeloptions.norm_hi");
+	midbin = pt.get<int>("modeloptions.midbin");
+	bg_min = pt.get<double>("modeloptions.background_lo");
+	bg_max = pt.get<double>("modeloptions.background_hi");
+
 	cout<<"# Using "<<SloanData::get_instance().get_width()<<"x"<<SloanData::get_instance().get_height()<<" images"<<endl;
 	cout<<"# Using "<<SloanData::get_instance().get_height()<<" bands"<<endl;
 	cout<<"# Using maximum number of sources "<<nmax<<" (fixed="<<fixed<<")"<<endl;

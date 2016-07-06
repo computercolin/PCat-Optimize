@@ -37,6 +37,7 @@ SloanModel::SloanModel()
 void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, double M)
 {
 	// check that ipsf = 0?
+	(void)ipsf;
 	// assert that psf_size is odd?
 	// determine pixels to evaluate over to stay within PSF box
 	int bound = (psf_size - 1) / 2;

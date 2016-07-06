@@ -3,6 +3,11 @@
 
 #include "MyRJObject.h"
 #include "MyDistribution.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+
+using boost::property_tree::ptree;
 
 class FermiModelOptions
 {
@@ -34,7 +39,7 @@ class FermiModelOptions
 
 	public:
 		FermiModelOptions();
-		void load(const char* modeloptions_file);
+		void load(ptree pt);
 		MyRJObject<MyDistribution> objects();
 		double get_smin() { return smin; }
 		double get_smax() { return smax; }

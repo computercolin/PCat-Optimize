@@ -3,6 +3,10 @@
 
 #include "MyRJObject.h"
 #include "MyDistribution.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+
+using boost::property_tree::ptree;
 
 class SloanModelOptions
 {
@@ -27,7 +31,7 @@ class SloanModelOptions
 
 	public:
 		SloanModelOptions();
-		void load(const char* modeloptions_file);
+		void load(ptree pt);
 		MyRJObject<MyDistribution> objects();
 		double get_bg_min() { return bg_min; }
 		double get_bg_max() { return bg_max; }

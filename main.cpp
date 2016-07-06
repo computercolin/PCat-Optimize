@@ -1,6 +1,8 @@
 #include <iostream>
 #include <CommandLineOptions.h>
 #include <MTSampler.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include "FermiModelOptions.h"
 #include "MyOptions.h"
 #include "FermiModel.h"
@@ -11,6 +13,7 @@
 
 using namespace std;
 using namespace DNest3;
+using boost::property_tree::ptree;
 
 int main(int argc, char** argv)
 {
@@ -32,31 +35,34 @@ int main(int argc, char** argv)
 	// Added option to specify output file name
 	MyOptions samplerOptions(options.get_configFile().c_str(), options.set_gzip());
 
-	// Load data; must be done before sampler created
-        /*FermiData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
-                                ("Data/"+options.get_dataFile()+"_exp.txt").c_str(),
-				("Data/"+options.get_dataFile()+"_pix.txt").c_str(),
-				("Data/"+options.get_dataFile()+"_tem.txt").c_str());*/
-	SloanData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
-                                ("Data/"+options.get_dataFile()+"_psf.txt").c_str(),
-                                ("Data/"+options.get_dataFile()+"_pix.txt").c_str());
-
-	// Load model options from file
-	//FermiModelOptions::get_instance().load(("run-"+options.get_configFile()+"/OPTIONS-MODEL").c_str());
-	SloanModelOptions::get_instance().load(("run-"+options.get_configFile()+"/OPTIONS-MODEL").c_str());
-
-	// Create sampler
-	//MTSampler<FermiModel>
-	MTSampler<SloanModel>
-					sampler(options.get_numThreads(),
-					options.get_compression_double(),
-					samplerOptions);
-
-	// Load levels file if requested
-	if(options.get_levelsFile().compare("") != 0)
-		sampler.loadLevels(options.get_levelsFile().c_str());
-
-	sampler.run();
+	ptree pt;
+	read_xml("run-"+options.get_configFile()+"/OPTIONS-MODEL", pt);
+	
+	// TODO look at Start file?
+	// must load data, then model options, before creating sampler
+	// then load levels file if requested
+	string model = pt.get<string>("modeloptions.model");
+	if (model == "fermi"){
+		FermiData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
+			("Data/"+options.get_dataFile()+"_exp.txt").c_str(),
+			("Data/"+options.get_dataFile()+"_pix.txt").c_str(),
+			("Data/"+options.get_dataFile()+"_tem.txt").c_str());
+		FermiModelOptions::get_instance().load(pt);
+		MTSampler<FermiModel> sampler(options.get_numThreads(), options.get_compression_double(), samplerOptions);
+		if(options.get_levelsFile().compare("") != 0)
+			sampler.loadLevels(options.get_levelsFile().c_str());
+		sampler.run();
+	}
+	if (model == "sloan"){
+		SloanData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
+			("Data/"+options.get_dataFile()+"_psf.txt").c_str(),
+			("Data/"+options.get_dataFile()+"_pix.txt").c_str());
+		SloanModelOptions::get_instance().load(pt);
+		MTSampler<SloanModel> sampler(options.get_numThreads(), options.get_compression_double(), samplerOptions);
+		if(options.get_levelsFile().compare("") != 0)
+			sampler.loadLevels(options.get_levelsFile().c_str());
+		sampler.run();
+	}
 
 	return 0;
 }
