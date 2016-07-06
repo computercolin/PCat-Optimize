@@ -29,7 +29,6 @@ void SloanModelOptions::load(ptree pt)
 	bg_max = pt.get<double>("modeloptions.background_hi");
 
 	cout<<"# Using "<<SloanData::get_instance().get_width()<<"x"<<SloanData::get_instance().get_height()<<" images"<<endl;
-	cout<<"# Using "<<SloanData::get_instance().get_height()<<" bands"<<endl;
 	cout<<"# Using maximum number of sources "<<nmax<<" (fixed="<<fixed<<")"<<endl;
 	cout<<"# Using flux lower limit between "<<fluxlo<<" counts"<<endl;
 	cout<<"# Using flux upper limit above "<<fluxhi_min<<" counts"<<endl;
