@@ -9,6 +9,7 @@ class MyRJObject : public RJObject<Distribution> {
 	public:
 		MyRJObject(int num_dimensions, int max_num_components, bool fixed, const Distribution& dist);
 		double perturb();
+		void print(std::ostream& out) const;
 };
 
 template<class Distribution>
@@ -60,6 +61,23 @@ double MyRJObject<Distribution>::perturb()
 	}
 
 	return logH;
+}
+
+template<class Distribution>
+void MyRJObject<Distribution>::print(std::ostream& out) const
+{
+	out<<this->num_components<<' ';
+
+	// Write out components
+	for(int j=0; j<this->num_dimensions; j++)
+	{
+		for(int i=0; i<this->num_components; i++)
+			out<<this->components[i][j]<<' ';
+
+		// Pad with zeros (turned-off components)
+		for(int i=this->num_components; i<this->max_num_components; i++)
+			out<<0.<<' ';
+	}
 }
 
 #endif
