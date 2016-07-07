@@ -188,5 +188,5 @@ void MyModel::print(std::ostream& out) const
 
 string MyModel::description() const
 {
-	return string("pixel lambdas | ndim, maxN"+objects.get_dist().description()+" | N, point sources | isotropic backgrounds | template coefficients | PSF score, stail, gtail, fcore | staleness");
+	return string("pixel lambdas | ndim, maxN"+objects.get_dist().description()+" | N, point sources | isotropic backgrounds | template coefficients | staleness");
 }
