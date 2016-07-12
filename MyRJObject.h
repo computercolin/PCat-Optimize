@@ -66,6 +66,7 @@ double MyRJObject<Distribution>::perturb()
 template<class Distribution>
 void MyRJObject<Distribution>::print(std::ostream& out) const
 {
+	this->dist.print(out); out<<' ';
 	out<<this->num_components<<' ';
 
 	// Write out components
