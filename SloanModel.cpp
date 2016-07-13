@@ -28,6 +28,7 @@ SloanModel::SloanModel()
 	,width(SloanData::get_instance().get_width())
 	,height(SloanData::get_instance().get_height())
 	,psf_size(SloanData::get_instance().get_psf_size())
+	,psf_resampling(SloanData::get_instance().get_psf_resampling())
 	,psfs(SloanData::get_instance().get_psfs())
 	,bias(SloanData::get_instance().get_bias())
 	,gain(SloanData::get_instance().get_gain())
@@ -49,17 +50,17 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 	for (int y=ymin; y<ymax; y++){
 		for (int x=xmin; x<xmax; x++){
 			int jimg = ibin*width*height + y*width + x;
-			double psf_x = x - xc + bound;
-			double psf_y = y - yc + bound;
+			double psf_x = (x - xc + bound)*psf_resampling;
+			double psf_y = (y - yc + bound)*psf_resampling;
 			int f_psf_x = floor(psf_x);
 			int c_psf_x = ceil(psf_x);
 			int f_psf_y = floor(psf_y);
 			int c_psf_y = ceil(psf_y);
 			// maybe an actual interpolation routine would be faster?
-			double psf = psfs[f_psf_y*psf_size + f_psf_x] * (c_psf_x - psf_x) * (c_psf_y - psf_y)
-					+ psfs[f_psf_y*psf_size + c_psf_x] * (psf_x - f_psf_x) * (c_psf_y - psf_y)
-					+ psfs[c_psf_y*psf_size + f_psf_x] * (c_psf_x - psf_x) * (psf_y - f_psf_y)
-					+ psfs[c_psf_y*psf_size + c_psf_x] * (psf_x - f_psf_x) * (psf_y - f_psf_y);
+			double psf = psfs[f_psf_y*psf_size*psf_resampling + f_psf_x] * (c_psf_x - psf_x) * (c_psf_y - psf_y)
+					+ psfs[f_psf_y*psf_size*psf_resampling + c_psf_x] * (psf_x - f_psf_x) * (c_psf_y - psf_y)
+					+ psfs[c_psf_y*psf_size*psf_resampling + f_psf_x] * (c_psf_x - psf_x) * (psf_y - f_psf_y)
+					+ psfs[c_psf_y*psf_size*psf_resampling + c_psf_x] * (psf_x - f_psf_x) * (psf_y - f_psf_y);
 			image[jimg] += M*psf;
 		}
 	}

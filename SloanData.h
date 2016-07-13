@@ -19,7 +19,7 @@ class SloanData
 		std::vector< double > y_rays;
 
 		// PSFs
-		int psf_size;
+		int psf_size, psf_resampling;
 		std::vector< double > psfs;
 
 		// The pixels
@@ -38,6 +38,7 @@ class SloanData
 		double get_ymin() const { return xmin; }
 		double get_ymax() const { return ymax; }
 		int get_psf_size() const { return psf_size; }
+		int get_psf_resampling() const { return psf_resampling; }
 		double get_bias() const { return bias; }
 		double get_gain() const { return gain; }
 		const std::vector< double >& get_x_rays() const

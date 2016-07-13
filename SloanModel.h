@@ -9,7 +9,7 @@ class SloanModel : public MyModel
 	protected:
 		int width, height;
 		// PSF
-		int psf_size;
+		int psf_size, psf_resampling;
 		std::vector<double> psfs;
 		double bias, gain;
 
