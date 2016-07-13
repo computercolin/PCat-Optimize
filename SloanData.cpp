@@ -34,8 +34,8 @@ void SloanData::load(const char* counts_file, const char* psf_file, const char* 
 	if (!fin)
 		cerr<<"# ERROR: couldn't open file "<<psf_file<<"."<<endl;
 	fin>>psf_size>>psf_resampling;
-	psfs.assign(nband*psf_size*psf_size, 0);
-	for (int i=0; i<nband*psf_size*psf_size; i++){
+	psfs.assign(nband*psf_size*psf_size*psf_resampling*psf_resampling, 0);
+	for (int i=0; i<nband*psf_size*psf_size*psf_resampling*psf_resampling; i++){
 		fin>>psfs[i];
 	}
 	fin.close();
