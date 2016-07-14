@@ -20,7 +20,7 @@ void SloanData::load(const char* counts_file, const char* psf_file, const char* 
                 cerr<<"# ERROR: couldn't open file "<<pixel_file<<"."<<endl;
 	fin>>width>>height>>nband; // read number of pixels, bins, and PSF classes
 	fin>>xmin>>xmax>>ymin>>ymax; //read x,y bounds
-	fin>>bias>>gain; //read bias and gain
+	fin>>bias>>gain>>exposure; //read bias and gain
 	// FIXME assuming aligned images
         /*x_rays.assign(band*height*width, 0);
         y_rays.assign(band*height*width, 0);

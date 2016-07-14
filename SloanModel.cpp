@@ -18,7 +18,7 @@ SloanModel::SloanModel()
 	1., //all quantities will be per pixel
 	SloanData::get_instance().get_image(),
 	// exposure is all ones
-	vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), 1.),
+	vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), SloanData::get_instance().get_exposure()),
 	SloanModelOptions::get_instance().get_bg_min(),
 	SloanModelOptions::get_instance().get_bg_max(),
 	1, // templates:

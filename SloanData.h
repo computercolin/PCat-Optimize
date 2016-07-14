@@ -13,6 +13,7 @@ class SloanData
 		// bounds on longitude and latitude
 		double xmin, xmax, ymin, ymax;
 		double bias, gain; // Sloan 'gain' = inverse gain
+		double exposure; // assumed constant through entire image
 
 		// Coordinates of pixel centers
 		std::vector< double > x_rays;
@@ -41,6 +42,7 @@ class SloanData
 		int get_psf_resampling() const { return psf_resampling; }
 		double get_bias() const { return bias; }
 		double get_gain() const { return gain; }
+		double get_exposure() const { return exposure; }
 		const std::vector< double >& get_x_rays() const
 			{ return x_rays; }
 		const std::vector< double >& get_y_rays() const
