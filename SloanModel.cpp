@@ -42,10 +42,10 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 	// assert that psf_size is odd?
 	// determine pixels to evaluate over to stay within PSF box
 	int bound = (psf_size - 1) / 2;
-	int xmin = xc > bound - 1 ? ceil(xc - bound) + 1 : 0;
-	int xmax = xc < width - bound + 1 ? floor(xc + bound) - 1 : width;
-	int ymin = yc > bound - 1 ? ceil(yc - bound) + 1 : 0;
-	int ymax = yc < height - bound + 1 ? floor(yc + bound)- 1 : height;
+	int xmin = xc > bound - 1 ? ceil(xc - bound) : 0;
+	int xmax = xc < width - bound - 1 ? floor(xc + bound) + 1 : width;
+	int ymin = yc > bound - 1 ? ceil(yc - bound) : 0;
+	int ymax = yc < height - bound - 1 ? floor(yc + bound) + 1 : height;
 
 	for (int y=ymin; y<ymax; y++){
 		for (int x=xmin; x<xmax; x++){
@@ -73,4 +73,10 @@ double SloanModel::pixelLogLikelihood(double data, double lambda) const
 	// if variance calculated on data, not lambda
 	// then normalization term constant
 	return -(lambda - data)*(lambda - data)/(2 * variance);
+
+	//VARIANCE CALCULATED ON LAMBDA
+	//double variance = (lambda-bias)/gain;
+	//if (variance < 1.) { variance = 1.; }
+	// the sqrt(2 pi) stays constant
+	//return -0.5*log(variance)-(lambda - data)*(lambda - data)/(2 * variance);
 }
