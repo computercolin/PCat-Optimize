@@ -13,6 +13,7 @@ MyDistribution::MyDistribution(double l_min, double l_max,
 					double fluxhi_min,
 					double flux_norm,
 					double norm_min, double norm_max,
+					double penalty, double slope,
 					int nbin, int midbin)
 :l_min(l_min)
 ,l_max(l_max)
@@ -24,6 +25,8 @@ MyDistribution::MyDistribution(double l_min, double l_max,
 ,flux_norm(flux_norm)
 ,norm_min(norm_min)
 ,norm_max(norm_max)
+,penalty(penalty)
+,slope(slope)
 ,nbin(nbin)
 ,midbin(midbin)
 ,sdev_color_scale(1.)
@@ -37,7 +40,12 @@ void MyDistribution::fromPrior()
 {
 	fluxhi = fluxhi_min / randomU();
 	norm = exp(log(norm_min) + log(norm_max/norm_min)*randomU());
-	gamma = randomU();
+	if (slope) {
+		gamma = 1./slope;
+	}
+	else{
+		gamma = randomU();
+	}
 	for (int i=0; i<nbin-1; i++){
 		mean_colors[i] = tan(M_PI * (randomU() - 0.5)); // full Cauchy
 		sdev_colors[i] = sdev_color_scale * tan(0.5 * M_PI * randomU()); //half Cauchy
@@ -67,8 +75,10 @@ double MyDistribution::perturb_parameters()
 	}
 	else if(which == 2)
 	{
-		gamma += randh();
-		gamma = mod(gamma, 1.);
+		if (!slope){
+			gamma += randh();
+			gamma = mod(gamma, 1.);
+		}
 	}
 	else if(which == 3){
 		int i = randInt(nbin-1);
@@ -91,7 +101,7 @@ double MyDistribution::log_pn(const int n) const
 	// alpha = a - 1
 	double alpha = 1./gamma - 1;
 	double navg = norm * pow(flux_norm / fluxlo, alpha) * (1 - pow(fluxlo / fluxhi, alpha)) / alpha;
-	return n * log(navg) - navg - lgamma(n + 1);
+	return n * log(navg) - navg - lgamma(n + 1) - penalty * n;
 }
 
 double MyDistribution::log_pdf(const std::vector<double>& vec) const

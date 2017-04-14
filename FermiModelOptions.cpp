@@ -63,6 +63,6 @@ MyRJObject<MyDistribution> FermiModelOptions::objects()
 	return MyRJObject<MyDistribution>(2+FermiData::get_instance().get_nbin(), nmax, fixed, MyDistribution(
 			data.get_lmin(), data.get_lmax(),
 			data.get_bmin(), data.get_bmax(), true,
-                        fluxlo, fluxhi_min, fluxnorm, norm_min, norm_max,
+                        fluxlo, fluxhi_min, fluxnorm, norm_min, norm_max, 0., 0.,
 			FermiData::get_instance().get_nbin(), midbin));
 }

@@ -29,6 +29,11 @@ class SloanModelOptions
 		// bounds on background (counts / pixel)
 		double bg_min, bg_max;
 
+		// logL penalty against new sources
+		double penalty;
+		// fixed flux distribution slope
+		double slope;
+
 	public:
 		SloanModelOptions();
 		void load(ptree pt);

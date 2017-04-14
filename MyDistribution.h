@@ -15,6 +15,9 @@ class MyDistribution:public Distribution
 		double fluxhi_min;
 		double flux_norm, norm_min, norm_max;
 
+		double penalty;
+		double slope;
+
 		// Lower limit and 1/slope for Pareto interim prior
 		// for masses
 		double fluxhi, norm;
@@ -35,6 +38,7 @@ class MyDistribution:public Distribution
 					double fluxhi_min,
 					double flux_norm,
 					double norm_min, double norm_max,
+					double penalty, double slope,
 					int nbin, int midbin);
 
 		void fromPrior();
