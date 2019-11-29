@@ -5,18 +5,18 @@
 #include <vector>
 #include "MyRJObject.h"
 #include "MyDistribution.h"
+#include "MyModelGlobals.h"
 
 using namespace std;
 
 class MyModel : public DNest3::Model
 {
 	protected:
+        MyModelGlobals* globals;
 		MyRJObject<MyDistribution> objects;
 
 		int nbin, npsf, npix;
 		double pixel_area;
-		std::vector<double> data;
-		std::vector<double> exposure;
 		// The model source flux image
 		std::vector<double> image;
 		// not sure what visibility the next two methods should have
@@ -36,10 +36,7 @@ class MyModel : public DNest3::Model
 
                 // emission templates
                 int ntem;
-                std::vector<double> tem_min;
-		std::vector<double> tem_max;
                 std::vector<double> tem; // coefficients
-		std::vector<double> etemplate; //actual templates
 	public:
 		MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npix, double pixel_area,
 			vector<double> data, vector<double> exposure, double bg_min, double bg_max,
@@ -59,6 +56,9 @@ class MyModel : public DNest3::Model
 
 		// Return string with column information
 		std::string description() const;
+
+		// MyModel(const MyModel& o) = delete;  // Copy constructor needed for datastructure initalization.
+		// MyModel& operator=(const MyModel& o) = delete;
 };
 
 #endif

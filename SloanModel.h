@@ -7,6 +7,7 @@
 class SloanModel : public MyModel
 {
 	protected:
+        // SloanModelGlobals *sloanGlobals;
 		int width, height;
 		// PSF
 		int psf_size, psf_resampling;

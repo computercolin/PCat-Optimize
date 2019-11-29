@@ -2,7 +2,6 @@
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
 #include <cmath>
-#include <vector>
 
 using namespace std;
 using namespace DNest3;
@@ -10,13 +9,12 @@ using namespace DNest3;
 MyModel::MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npix, double pixel_area,
 	vector<double> data, vector<double> exposure, double bg_min, double bg_max,
 	int ntem, vector<double> tem_min, vector<double> tem_max, vector<double> etemplate)
-:objects(objects)
+:globals(&MyModelGlobals::get_instance())
+,objects(objects)
 ,nbin(nbin)
 ,npsf(npsf)
 ,npix(npix)
 ,pixel_area(pixel_area)
-,data(data)
-,exposure(exposure)
 ,image(nbin*npsf*npix)
 ,lambda(nbin*npsf*npix)
 ,staleness(100) // start stale
@@ -24,11 +22,13 @@ MyModel::MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npi
 ,bg_max(bg_max)
 ,bg(nbin*npsf)
 ,ntem(ntem)
-,tem_min(tem_min)
-,tem_max(tem_max)
 ,tem(ntem)
-,etemplate(etemplate)
 {
+    globals->data = data;
+    globals->exposure = exposure;
+    globals->tem_min = tem_min;
+    globals->tem_max = tem_max;
+    globals->etemplate = etemplate;
 }
 
 
@@ -43,7 +43,7 @@ void MyModel::fromPrior()
 	}
 
 	for (int i=0; i<ntem; i++){
-		tem[i] = exp(log(tem_min[i]) + log(tem_max[i]/tem_min[i])*randomU());
+		tem[i] = exp(log(globals->tem_min[i]) + log(globals->tem_max[i]/globals->tem_min[i])*randomU());
 	}
 	calculate_image();
 }
@@ -57,9 +57,9 @@ void MyModel::update_lambdas(){
                                 lambda[jimg] = image[jimg] + bg[jpsf];
                                 for (int iv=0; iv<ntem; iv++){
           	                      int jetemplate = iv*nbin*npsf*npix + jimg;
-                                      lambda[jimg] += tem[iv]*etemplate[jetemplate];
+                                      lambda[jimg] += tem[iv]*globals->etemplate[jetemplate];
                                 }
-                                lambda[jimg] *= exposure[jimg] * pixel_area;
+                                lambda[jimg] *= globals->exposure[jimg] * pixel_area;
 			}
 		}
 	}
@@ -145,8 +145,8 @@ double MyModel::perturb()
 	{
 		int i = randInt(ntem);
 		tem[i] = log(tem[i]);
-		tem[i] += log(tem_max[i]/tem_min[i])*randh();
-		tem[i] = mod(tem[i] - log(tem_min[i]), log(tem_max[i]/tem_min[i])) + log(tem_min[i]);
+		tem[i] += log(globals->tem_max[i]/globals->tem_min[i])*randh();
+		tem[i] = mod(tem[i] - log(globals->tem_min[i]), log(globals->tem_max[i]/globals->tem_min[i])) + log(globals->tem_min[i]);
 		tem[i] = exp(tem[i]);
 		update_lambdas(); // point source image has not changed; circumvent RJObject added/removed component arrays
 	}
@@ -164,7 +164,7 @@ double MyModel::logLikelihood() const
 {
 	double logL = 0.;
         for (int i=0; i<nbin*npsf*npix; i++){
-		logL += pixelLogLikelihood(data[i], lambda[i]);
+		logL += pixelLogLikelihood(globals->data[i], lambda[i]);
 	}
 
 	return logL;
