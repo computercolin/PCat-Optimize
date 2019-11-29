@@ -1,0 +1,15 @@
+<modeloptions>
+  <model>sloan</model>
+  <nmax>7</nmax> <!-- int -->
+  <nfixed>false</nfixed> <!-- bool -->
+  <fmin>22</fmin> <!-- flux min, set to value in paper -->
+  <fmax_lo>18</fmax_lo>
+  <fnorm>3</fnorm>
+  <norm_lo>2</norm_lo>
+  <norm_hi>4</norm_hi>
+  <midbin>1</midbin> <!-- int -->
+  <background_lo>0.3</background_lo>
+  <background_hi>0.6</background_hi>
+  <!-- optional default 0: <penalty>sloan</penalty> -->
+  <!-- optional default 0: <slope>sloan</slope> -->
+</modeloptions>
