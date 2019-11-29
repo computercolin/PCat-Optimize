@@ -11,20 +11,22 @@ using namespace DNest3;
 
 SloanModel::SloanModel()
 	: MyModel(
-	SloanModelOptions::get_instance().objects(),
-	SloanData::get_instance().get_nband(),
-	1, //only allowing one PSF class for now
-	SloanData::get_instance().get_height() * SloanData::get_instance().get_width(),
-	1., //all quantities will be per pixel
-	SloanData::get_instance().get_image(),
-	// exposure is all ones
-	vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), SloanData::get_instance().get_exposure()),
-	SloanModelOptions::get_instance().get_bg_min(),
-	SloanModelOptions::get_instance().get_bg_max(),
-	1, // templates:
-	vector<double>(1, 0.99), // who
-	vector<double>(1, 1.01), // needs
-	vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), 0)) // them?
+        SloanModelOptions::get_instance().objects(),
+        SloanData::get_instance().get_nband(),
+        1, //only allowing one PSF class for now
+        SloanData::get_instance().get_height() * SloanData::get_instance().get_width(),
+        1., //all quantities will be per pixel
+        SloanData::get_instance().get_image(),
+        // exposure is all ones
+        vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), SloanData::get_instance().get_exposure()),
+        SloanModelOptions::get_instance().get_bg_min(),
+        SloanModelOptions::get_instance().get_bg_max(),
+        1, // templates:
+        vector<double>(1, 0.99), // who
+        vector<double>(1, 1.01), // needs
+        vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), 0)
+	     ) // them?
+    // ,sloanGlobals(&SloanModelGlobals::get_instance())
 	,width(SloanData::get_instance().get_width())
 	,height(SloanData::get_instance().get_height())
 	,psf_size(SloanData::get_instance().get_psf_size())

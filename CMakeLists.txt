@@ -67,6 +67,7 @@ add_executable(main
         MyDistribution.h
         MyModel.cpp
         MyModel.h
+        MyModelGlobals.h
         MyOptions.cpp
         MyOptions.h
         MyRJObject.h
@@ -74,6 +75,7 @@ add_executable(main
         SloanData.h
         SloanModel.cpp
         SloanModel.h
+#        SloanModelGlobals.h
         SloanModelOptions.cpp
         SloanModelOptions.h
         ${CMAKE_BINARY_DIR}/buildinfo.h
