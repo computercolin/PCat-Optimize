@@ -63,13 +63,20 @@ include_directories(.)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/buildflags.in
                ${CMAKE_BINARY_DIR}/buildflags)
 file(READ ${CMAKE_BINARY_DIR}/buildflags CONTENTS)
-file(WRITE ${CMAKE_BINARY_DIR}/buildflags "########\n#### PCAT-DNEST FLAGS:\n${CONTENTS}")
+file(WRITE ${CMAKE_BINARY_DIR}/buildflags "#### PCAT-DNEST FLAGS:\n${CONTENTS}")
 file(READ ${DNEST3_LIBRARY}/../../buildflags CONTENTS)
 file(APPEND ${CMAKE_BINARY_DIR}/buildflags "\n#### LIB DNEST3 FLAGS:\n${CONTENTS}")
 file(READ ${RJOBJ_LIBRARY}/../../buildflags CONTENTS)
 file(APPEND ${CMAKE_BINARY_DIR}/buildflags "\n#### LIB RJObject FLAGS:\n${CONTENTS}######\n")
-# include_directories(${CMAKE_BINARY_DIR})  # Since we aren't using buildflags.in to generate a header file, we
-                                            # don't need this dir.
+file(READ ${CMAKE_BINARY_DIR}/buildflags CONTENTS)
+file(WRITE ${CMAKE_BINARY_DIR}/buildinfo.h "constexpr char BUILDINFO[] =  R\"(${CONTENTS})\";\n")
+execute_process(COMMAND git --no-pager log --graph "--pretty=format:%h -%d %s (%cD) <%an>%n" --abbrev-commit --date=relative --branches -n1
+# execute_process(COMMAND git --no-pager log --graph --abbrev-commit --date=relative --branches -n1
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE CONTENTS
+                ERROR_VARIABLE CONTENTS)
+file(APPEND ${CMAKE_BINARY_DIR}/buildinfo.h "constexpr char SRC_LAST_COMMIT[] =  R\"(${CONTENTS})\";\n")
+include_directories(${CMAKE_BINARY_DIR})
 
 add_executable(main
         main.cpp
@@ -92,6 +99,7 @@ add_executable(main
         SloanModel.h
         SloanModelOptions.cpp
         SloanModelOptions.h
+        ${CMAKE_BINARY_DIR}/buildinfo.h
 #        ${DNEST3_SRCS}
 #        ${RJOBJ_SRCS}
         )

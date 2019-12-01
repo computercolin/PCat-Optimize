@@ -10,13 +10,22 @@
 #include "SloanModelOptions.h"
 #include "SloanData.h"
 #include "SloanModel.h"
+#include "buildinfo.h"
 
 using namespace std;
 using namespace DNest3;
 using boost::property_tree::ptree;
 
+constexpr char BUILDINFO_CMDLINE_FLAG[] = "--info";
+
 int main(int argc, char** argv)
 {
+    if (argc == 2 && std::strcmp(argv[1], BUILDINFO_CMDLINE_FLAG) == 0) {
+        // If only command line arg is --info, just print buildinfo.
+        std::printf(BUILDINFO);
+        std::printf("### SRC LAST COMMIT\n%s###", SRC_LAST_COMMIT);
+        std::exit(0);
+    }
 	CommandLineOptions options(argc, argv);
 
 	std::cout<<"# Using "<<options.get_numThreads()<<" thread"<<
