@@ -70,7 +70,7 @@ file(READ ${RJOBJ_LIBRARY}/../../buildflags CONTENTS)
 file(APPEND ${CMAKE_BINARY_DIR}/buildflags "\n#### LIB RJObject FLAGS:\n${CONTENTS}######\n")
 file(READ ${CMAKE_BINARY_DIR}/buildflags CONTENTS)
 file(WRITE ${CMAKE_BINARY_DIR}/buildinfo.h "constexpr char BUILDINFO[] =  R\"(${CONTENTS})\";\n")
-execute_process(COMMAND git --no-pager log --graph "--pretty=format:%h -%d %s (%cD) <%an>%n" --abbrev-commit --date=relative --branches -n1
+execute_process(COMMAND git --no-pager log --graph "--pretty=format:%h -%d %s (%cD) <%an>%n" --abbrev-commit -n1
 # execute_process(COMMAND git --no-pager log --graph --abbrev-commit --date=relative --branches -n1
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 OUTPUT_VARIABLE CONTENTS
