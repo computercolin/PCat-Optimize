@@ -20,6 +20,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/lib_rjobject)
 
 set(LIB_DEPENDS)
 # ===== BOOST =====
+set( Boost_USE_MULTITHREADED ON )
+set( Boost_NO_BOOST_CMAKE 1 ) #  Bug where FindBoost replaces the system MT boot with single threaded
 find_package (Boost COMPONENTS thread system REQUIRED)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 list (APPEND LIB_DEPENDS ${Boost_LIBRARIES})
