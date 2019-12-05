@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(portillo_pcat_dnest)
+project(portillo_pcat_dnest_zmod)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -13,28 +13,12 @@ set (CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -g -funroll-loops -fno-omit-frame-poi
 set (CMAKE_CXX_FLAGS_DEBUG "-O0 -DNDEBUG -g -fno-omit-frame-pointer")
 #set (CMAKE_CXX_FLAGS_DEBUG "-O2 -DNDEBUG -flto -march=native -g -fno-omit-frame-pointer")
 
-
 message(STATUS "INFO: Build is type ${CMAKE_BUILD_TYPE}")
-message(STATUS "INFO: DNEST lib dir is ${DNEST3_LIBRARY}")
-message(STATUS "INFO: RJOBJ lib dir is ${RJOBJ_LIBRARY}")
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib_dnest3)
+add_subdirectory(${PROJECT_SOURCE_DIR}/lib_rjobject)
 
 set(LIB_DEPENDS)
-# ===== RJOJECT and DNEST3 =====
-find_library(LIB_DNEST3 libdnest3.a HINTS ${DNEST3_LIBRARY})
-list (APPEND LIB_DEPENDS ${LIB_DNEST3})
-find_library(LIB_RJOBJ librjobject.a HINTS ${RJOBJ_LIBRARY})
-list (APPEND LIB_DEPENDS ${LIB_RJOBJ})
-
-if("${DNEST3_INCLUDES}" STREQUAL "")
-  message(STATUS "ERR: DNEST3_INCLUDES, the path to dnest3 header includes is required!! Add the path, or rewrite this cmake file so it can find it automatically!")
-endif("${DNEST3_INCLUDES}" STREQUAL "")
-if("${RJOBJ_INCLUDES}" STREQUAL "")
-  message(STATUS "ERR: RJOBJ_INCLUDES, the path to RJObjects header includes is required!! Add the path, or rewrite this cmake file so it can find it automatically!")
-endif("${RJOBJ_INCLUDES}" STREQUAL "")
-include_directories(${DNEST3_INCLUDES})
-include_directories(${RJOBJ_INCLUDES})
-
 # ===== BOOST =====
 find_package (Boost COMPONENTS thread system REQUIRED)
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
@@ -46,27 +30,18 @@ include_directories (SYSTEM ${GSL_INCLUDES})
 list (APPEND LIB_DEPENDS ${GSL_LIBRARIES})
 
 include_directories(.)
+include_directories(lib_rjobject)
+include_directories(lib_rjobject/Distributions)
+include_directories(lib_dnest3/include)
 
-
-#find_package(DNest3 REQUIRED)
-#list(APPEND LIB_DEPENDS ${DNEST3_LIBRARY})
-#include_directories (SYSTEM ${DNEST3_INCLUDES})
-
-# If attempting to recompile everything from this project:
-#file(GLOB DNEST3_SRCS ../eggplantbren_dnest3/include/*.h)
-#file(GLOB DNEST3_SRCS ../eggplantbren_dnest3/src/*.cpp)
-#file(GLOB RJOBJ_SRCS ../eggplantbren_rjobject/*.cpp)
-#file(GLOB RJOBJ_SRCS ../eggplantbren_rjobject/*.h)
-#file(GLOB RJOBJ_SRCS ../eggplantbren_rjobject/Distributions/*.cpp)
-#file(GLOB RJOBJ_SRCS ../eggplantbren_rjobject/Distributions/*.h)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/buildflags.in
                ${CMAKE_BINARY_DIR}/buildflags)
 file(READ ${CMAKE_BINARY_DIR}/buildflags CONTENTS)
 file(WRITE ${CMAKE_BINARY_DIR}/buildflags "#### PCAT-DNEST FLAGS:\n${CONTENTS}")
-file(READ ${DNEST3_LIBRARY}/../../buildflags CONTENTS)
+file(READ ${CMAKE_BINARY_DIR}/buildflags_dnest3 CONTENTS)
 file(APPEND ${CMAKE_BINARY_DIR}/buildflags "\n#### LIB DNEST3 FLAGS:\n${CONTENTS}")
-file(READ ${RJOBJ_LIBRARY}/../../buildflags CONTENTS)
+file(READ ${CMAKE_BINARY_DIR}/buildflags_rjobject CONTENTS)
 file(APPEND ${CMAKE_BINARY_DIR}/buildflags "\n#### LIB RJObject FLAGS:\n${CONTENTS}######\n")
 file(READ ${CMAKE_BINARY_DIR}/buildflags CONTENTS)
 file(WRITE ${CMAKE_BINARY_DIR}/buildinfo.h "constexpr char BUILDINFO[] =  R\"(${CONTENTS})\";\n")
@@ -104,5 +79,8 @@ add_executable(main
 #        ${RJOBJ_SRCS}
         )
 
+# ===== DNEST3 =====
+target_link_libraries(main lib::dnest3)
+target_link_libraries(main lib::rjobject)
 
 target_link_libraries(main ${LIB_DEPENDS})
