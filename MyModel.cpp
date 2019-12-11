@@ -177,7 +177,8 @@ void MyModel::print(std::ostream& out) const
 		out<<lambda[i]<<' ';
 	out<<setprecision(10);
 	objects.print(out); out<<' ';
-	for(int i=0; i<nbin*npsf; i++){
+	int i_lim = nbin*npsf;
+	for(int i=0; i<i_lim; i++){
 		out<<bg[i]<<' ';
 	}
 	for(int i=0; i<ntem; i++){
