@@ -34,8 +34,9 @@ void SloanData::load(const char* counts_file, const char* psf_file, const char* 
 	if (!fin)
 		cerr<<"# ERROR: couldn't open file "<<psf_file<<"."<<endl;
 	fin>>psf_size>>psf_resampling;
-	psfs.assign(nband*psf_size*psf_size*psf_resampling*psf_resampling, 0);
-	for (int i=0; i<nband*psf_size*psf_size*psf_resampling*psf_resampling; i++){
+	int maxsize = nband*psf_size*psf_size*psf_resampling*psf_resampling;
+	psfs.assign(maxsize, 0);
+	for (int i=0; i<maxsize; i++){
 		fin>>psfs[i];
 	}
 	fin.close();
@@ -44,8 +45,9 @@ void SloanData::load(const char* counts_file, const char* psf_file, const char* 
 	fin.open(counts_file, ios::in);
 	if (!fin)
 		cerr<<"# ERROR: couldn't open file "<<counts_file<<"."<<endl;
-	image.assign(nband*height*width, 0);
-	for (int i=0; i<nband*height*width; i++)
+	int imgMaxsize = nband*height*width;
+	image.assign(imgMaxsize, 0);
+	for (int i=0; i<imgMaxsize; i++)
 		fin>>image[i];
 	fin.close();
 }

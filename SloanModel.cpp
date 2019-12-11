@@ -72,7 +72,8 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 double SloanModel::logLikelihood() const
 {
     double logL = 0.;
-    for (int i=0; i<nbin*npsf*npix; i++){
+    int maxInd = nbin*npsf*npix;
+    for (int i=0; i<maxInd; i++){
         logL += std::pow(lambda[i] - globals->data[i], 2)
                  / (-2 * gain_inv * (globals->data[i] - bias));
     }
