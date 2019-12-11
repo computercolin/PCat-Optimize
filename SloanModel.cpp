@@ -34,6 +34,7 @@ SloanModel::SloanModel()
 	,psfs(SloanData::get_instance().get_psfs())
 	,bias(SloanData::get_instance().get_bias())
 	,gain(SloanData::get_instance().get_gain())
+    ,gain_inv(1 / SloanData::get_instance().get_gain())
 {
 }
 
@@ -71,10 +72,13 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 double SloanModel::pixelLogLikelihood(double data, double lambda) const
 {
 	// http://classic.sdss.org/dr7/algorithms/fluxcal.html
-	double variance = (data - bias)/gain; //ignoring dark noise and read noise
+	// double variance = (data - bias)/gain; //ignoring dark noise and read noise
+    double variance = (data - bias) * gain_inv; //ignoring dark noise and read noise
+
 	// if variance calculated on data, not lambda
 	// then normalization term constant
-	return -(lambda - data)*(lambda - data)/(2 * variance);
+	// return -(lambda - data)*(lambda - data)/(2 * variance);
+    return std::pow(lambda - data, 2)/(-2 * variance);
 
 	//VARIANCE CALCULATED ON LAMBDA
 	//double variance = (lambda-bias)/gain;
