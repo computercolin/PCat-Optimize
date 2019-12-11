@@ -69,6 +69,17 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 	}
 }
 
+double SloanModel::logLikelihood() const
+{
+    double logL = 0.;
+    for (int i=0; i<nbin*npsf*npix; i++){
+        logL += std::pow(lambda[i] - globals->data[i], 2)
+                 / (-2 * gain_inv * (globals->data[i] - bias));
+    }
+
+    return logL;
+}
+
 double SloanModel::pixelLogLikelihood(double data, double lambda) const
 {
 	// http://classic.sdss.org/dr7/algorithms/fluxcal.html
