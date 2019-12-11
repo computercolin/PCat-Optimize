@@ -16,8 +16,10 @@ class SloanModel : public MyModel
 
 		void add_source_flux(int ibin, int ipsf, double lc, double bc, double M);
 		double pixelLogLikelihood(double data, double lambda) const;
+
 	public:
 		SloanModel();
+	    double logLikelihood() const;
 };
 
 #endif
