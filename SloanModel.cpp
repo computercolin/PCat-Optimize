@@ -73,12 +73,12 @@ double SloanModel::pixelLogLikelihood(double data, double lambda) const
 {
 	// http://classic.sdss.org/dr7/algorithms/fluxcal.html
 	// double variance = (data - bias)/gain; //ignoring dark noise and read noise
-    double variance = (data - bias) * gain_inv; //ignoring dark noise and read noise
+    // double variance = (data - bias) * gain_inv; //ignoring dark noise and read noise
 
 	// if variance calculated on data, not lambda
 	// then normalization term constant
 	// return -(lambda - data)*(lambda - data)/(2 * variance);
-    return std::pow(lambda - data, 2)/(-2 * variance);
+    return std::pow(lambda - data, 2)/(-2 * gain_inv * (data - bias));
 
 	//VARIANCE CALCULATED ON LAMBDA
 	//double variance = (lambda-bias)/gain;
