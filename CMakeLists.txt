@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(env{VERBOSE} 3)
-set (CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter")
+set (CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-unused-parameter -mavx2")
 #set (CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -flto -march=native -g -fno-omit-frame-pointer")
 # set (CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG -flto -march=native -funroll-loops")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -g -funroll-loops -fno-omit-frame-pointer")
