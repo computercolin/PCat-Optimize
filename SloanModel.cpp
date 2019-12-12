@@ -1,9 +1,9 @@
+#include <cmath>
+#include <vector>
 #include "SloanModel.h"
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
 #include "SloanData.h"
-#include <cmath>
-#include <vector>
 #include "SloanModelOptions.h"
 
 using namespace std;
@@ -72,10 +72,12 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 double SloanModel::logLikelihood() const
 {
     double logL = 0.;
-    int maxInd = nbin*npsf*npix;
-    for (int i=0; i<maxInd; i++){
-        logL += std::pow(lambda[i] - globals->data[i], 2)
-                 / (-2 * gain_inv * (globals->data[i] - bias));
+    double *datum = &globals->data[0];
+    double *finalDatum = &globals->data[nbin*npsf*npix];
+    const double *lam = &this->lambda[0];
+    for (; datum<=finalDatum; datum++, lam++){
+        logL += std::pow(*lam - *datum, 2)
+                 / (-2 * gain_inv * (*datum - bias));
     }
 
     return logL;
