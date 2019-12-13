@@ -55,9 +55,10 @@ void MyModel::update_lambdas() {
 
     for (int bin_x_psf = 0; bin_x_psf < bin_x_psf_max; bin_x_psf++) {
         int binpsfnpix_offset = bin_x_psf * npix;
+        double bgval = bg[bin_x_psf];
         for (int i_pix = 0; i_pix < npix; i_pix++) {
             int bin_x_psf_x_pix = binpsfnpix_offset + i_pix;
-            lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bg[bin_x_psf];
+            lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bgval;
             for (int i_tem = 0; i_tem < ntem; i_tem++) {
                 int jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
                 lambda[bin_x_psf_x_pix] += tem[i_tem] * globals->etemplate[jetemplate];
