@@ -66,26 +66,25 @@ void MyModel::update_lambdas() {
         int bin_x_psf_x_pix = binPsfNpix_offset;
         int bin_x_psf_x_pix_last = binPsfNpix_offset + npix -1;
         int bin_x_psf_x_pix_avx_max = (bin_x_psf_x_pix_last -3) & ~0b11;
-        for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_avx_max; bin_x_psf_x_pix+=4) {
-            __m256d lam_pd = _mm256_load_pd(image0 + bin_x_psf_x_pix);
-            lam_pd = _mm256_add_pd(lam_pd, bgval_pd);
-            for (int i_tem = 0; i_tem < ntem; i_tem++) {
-                int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
-                __m256d tmp = _mm256_mul_pd(_mm256_set1_pd(*(tem0 + i_tem)), _mm256_load_pd(etemplate0 + i_jetemplate));
+        for (int i_tem = 0; i_tem < ntem; i_tem++) {
+            int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+            for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_avx_max; bin_x_psf_x_pix+=4) {
+                __m256d lam_pd = _mm256_load_pd(image0 + bin_x_psf_x_pix);
+                lam_pd = _mm256_add_pd(lam_pd, bgval_pd);
+                __m256d tmp = _mm256_mul_pd(_mm256_set1_pd(*(tem0 + i_tem)),
+                                            _mm256_load_pd(etemplate0 + i_jetemplate));
                 lam_pd = _mm256_add_pd(lam_pd, tmp);
+                lam_pd = _mm256_mul_pd(lam_pd, _mm256_load_pd(exposure0 + bin_x_psf_x_pix));
+                lam_pd = _mm256_mul_pd(lam_pd, pixel_area_pd);
+                _mm256_store_pd(lambda0 + bin_x_psf_x_pix, lam_pd);
             }
-            lam_pd = _mm256_mul_pd(lam_pd, _mm256_load_pd(exposure0 + bin_x_psf_x_pix));
-            lam_pd = _mm256_mul_pd(lam_pd, pixel_area_pd);
-            _mm256_store_pd(lambda0 + bin_x_psf_x_pix, lam_pd);
-        }
 
-        for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_last; bin_x_psf_x_pix++) {
-            lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bgval;
-            for (int i_tem = 0; i_tem < ntem; i_tem++) {
-                int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+            // Loop peel. Not 4-doubles wide, process individually without avx.
+            for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_last; bin_x_psf_x_pix++) {
+                lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bgval;
                 lambda[bin_x_psf_x_pix] += *(tem0 + i_tem) * *(etemplate0 + i_jetemplate);
+                lambda[bin_x_psf_x_pix] *= *(exposure0 + bin_x_psf_x_pix) * pixel_area;
             }
-             lambda[bin_x_psf_x_pix] *= *(exposure0 + bin_x_psf_x_pix) * pixel_area;
         }
     }
 
