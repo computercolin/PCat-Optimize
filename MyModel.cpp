@@ -49,19 +49,20 @@ void MyModel::fromPrior()
 	calculate_image();
 }
 
-void MyModel::update_lambdas(){
-    for (int i_bin = 0; i_bin < nbin; i_bin++) {
-        for (int i_psf = 0; i_psf < npsf; i_psf++) {
-            int bin_x_psf = i_bin * npsf + i_psf;
-            for (int i_pix = 0; i_pix < npix; i_pix++) {
-                int bin_x_psf_x_pix = bin_x_psf * npix + i_pix;
-                lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bg[bin_x_psf];
-                for (int i_tem = 0; i_tem < ntem; i_tem++) {
-                    int jetemplate = i_tem * nbin * npsf * npix + bin_x_psf_x_pix;
-                    lambda[bin_x_psf_x_pix] += tem[i_tem] * globals->etemplate[jetemplate];
-                }
-                lambda[bin_x_psf_x_pix] *= globals->exposure[bin_x_psf_x_pix] * pixel_area;
+void MyModel::update_lambdas() {
+    int bin_x_psf_max = nbin * npsf;
+    int nbin_npsf_npix_prod = nbin * npsf * npix;
+
+    for (int bin_x_psf = 0; bin_x_psf < bin_x_psf_max; bin_x_psf++) {
+        int binpsfnpix_offset = bin_x_psf * npix;
+        for (int i_pix = 0; i_pix < npix; i_pix++) {
+            int bin_x_psf_x_pix = binpsfnpix_offset + i_pix;
+            lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bg[bin_x_psf];
+            for (int i_tem = 0; i_tem < ntem; i_tem++) {
+                int jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+                lambda[bin_x_psf_x_pix] += tem[i_tem] * globals->etemplate[jetemplate];
             }
+            lambda[bin_x_psf_x_pix] *= globals->exposure[bin_x_psf_x_pix] * pixel_area;
         }
     }
 }
