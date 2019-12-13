@@ -1,5 +1,6 @@
 #include <boost/align/aligned_allocator.hpp>
 #include <cmath>
+#include <immintrin.h>
 #include "MyModel.h"
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
@@ -52,20 +53,72 @@ void MyModel::fromPrior()
 void MyModel::update_lambdas() {
     int bin_x_psf_max = nbin * npsf;
     int nbin_npsf_npix_prod = nbin * npsf * npix;
-
+    double *image0 = &image[0];
+    double *lambda0 = &lambda[0];
+    double *exposure0= &globals->exposure[0];
+    double *tem0 = &tem[0];
+    double *etemplate0 = &globals->etemplate[0];
+    __m256d pixel_area_pd = _mm256_set1_pd(pixel_area);
     for (int bin_x_psf = 0; bin_x_psf < bin_x_psf_max; bin_x_psf++) {
-        int binpsfnpix_offset = bin_x_psf * npix;
+        int binPsfNpix_offset = bin_x_psf * npix;
         double bgval = bg[bin_x_psf];
-        for (int i_pix = 0; i_pix < npix; i_pix++) {
-            int bin_x_psf_x_pix = binpsfnpix_offset + i_pix;
+        __m256d bgval_pd = _mm256_set1_pd(bgval);
+        int bin_x_psf_x_pix = binPsfNpix_offset;
+        int bin_x_psf_x_pix_last = binPsfNpix_offset + npix -1;
+        int bin_x_psf_x_pix_avx_max = (bin_x_psf_x_pix_last -3) & ~0b11;
+        for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_avx_max; bin_x_psf_x_pix+=4) {
+            __m256d lam_pd = _mm256_load_pd(image0 + bin_x_psf_x_pix);
+            lam_pd = _mm256_add_pd(lam_pd, bgval_pd);
+            for (int i_tem = 0; i_tem < ntem; i_tem++) {
+                int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+                __m256d tmp = _mm256_mul_pd(_mm256_set1_pd(*(tem0 + i_tem)), _mm256_load_pd(etemplate0 + i_jetemplate));
+                lam_pd = _mm256_add_pd(lam_pd, tmp);
+            }
+            lam_pd = _mm256_mul_pd(lam_pd, _mm256_load_pd(exposure0 + bin_x_psf_x_pix));
+            lam_pd = _mm256_mul_pd(lam_pd, pixel_area_pd);
+            _mm256_store_pd(lambda0 + bin_x_psf_x_pix, lam_pd);
+        }
+
+        for (; bin_x_psf_x_pix <= bin_x_psf_x_pix_last; bin_x_psf_x_pix++) {
             lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bgval;
             for (int i_tem = 0; i_tem < ntem; i_tem++) {
-                int jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
-                lambda[bin_x_psf_x_pix] += tem[i_tem] * globals->etemplate[jetemplate];
+                int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+                lambda[bin_x_psf_x_pix] += *(tem0 + i_tem) * *(etemplate0 + i_jetemplate);
             }
-            lambda[bin_x_psf_x_pix] *= globals->exposure[bin_x_psf_x_pix] * pixel_area;
+             lambda[bin_x_psf_x_pix] *= *(exposure0 + bin_x_psf_x_pix) * pixel_area;
         }
     }
+
+//    for (int bin_x_psf = 0; bin_x_psf < bin_x_psf_max; bin_x_psf++) {
+//        int binpsfnpix_offset = bin_x_psf * npix;
+//        double bgval = bg[bin_x_psf];
+//        double *image_pos= &image[binpsfnpix_offset];
+//        double *exposure_pos = &globals->exposure[binpsfnpix_offset];
+//        double *lambda_pos = &lambda[binpsfnpix_offset];
+//        double *lambda_last = lambda_pos + npix -1;
+//        double *lambda_last_chunk = (double *) ((uintptr_t) (lambda_last - 3) & ~0b11111);
+//        int bin_x_psf_x_pix = binpsfnpix_offset;
+//        for (; lambda_pos <= lambda_last_chunk; bin_x_psf_x_pix+=4, lambda_pos+=4, image_pos+=4, exposure_pos+=4) {
+//            __m256d lam_pd = _mm256_add_pd(_mm256_load_pd(lambda_pos), _mm256_set1_pd(bgval));
+//            for (int i_tem = 0; i_tem < ntem; i_tem++) {
+//                int i_jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+//                lam_pd = _mm256_mul_pd(lam_pd, _mm256_load_pd(&globals->etemplate[i_jetemplate]));
+//            }
+//            lam_pd = _mm256_mul_pd(lam_pd, _mm256_load_pd(exposure_pos));
+//            lam_pd = _mm256_mul_pd(lam_pd, _mm256_set1_pd(pixel_area));
+//            _mm256_store_pd(lambda_pos, lam_pd);
+//        }
+//
+//        // Loop peel, final data not 256d packable.
+//        for (; lambda_pos <= lambda_last; bin_x_psf_x_pix++, lambda_pos++, image_pos++, exposure_pos++) {
+//            lambda[bin_x_psf_x_pix] = image[bin_x_psf_x_pix] + bgval;
+//            for (int i_tem = 0; i_tem < ntem; i_tem++) {
+//                int jetemplate = i_tem * nbin_npsf_npix_prod + bin_x_psf_x_pix;
+//                lambda[bin_x_psf_x_pix] += tem[i_tem] * globals->etemplate[jetemplate];
+//            }
+//            lambda[bin_x_psf_x_pix] *= globals->exposure[bin_x_psf_x_pix] * pixel_area;
+//        }
+//    }
 }
 
 void MyModel::calculate_image()
