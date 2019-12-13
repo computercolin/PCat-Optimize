@@ -52,15 +52,17 @@ int main(int argc, char** argv)
 	// then load levels file if requested
 	string model = pt.get<string>("modeloptions.model");
 	if (model == "fermi"){
-		FermiData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
-			("Data/"+options.get_dataFile()+"_exp.txt").c_str(),
-			("Data/"+options.get_dataFile()+"_pix.txt").c_str(),
-			("Data/"+options.get_dataFile()+"_tem.txt").c_str());
-		FermiModelOptions::get_instance().load(pt);
-		MTSampler<FermiModel> sampler(options.get_numThreads(), options.get_compression_double(), samplerOptions);
-		if(options.get_levelsFile().compare("") != 0)
-			sampler.loadLevels(options.get_levelsFile().c_str());
-		sampler.run();
+        std::cout<<"ERROR: Fermimodel has been disabled for testing. Uncomment and fix vector allocators to continue."<<std::endl;
+        std::exit(1);
+//		FermiData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),
+//			("Data/"+options.get_dataFile()+"_exp.txt").c_str(),
+//			("Data/"+options.get_dataFile()+"_pix.txt").c_str(),
+//			("Data/"+options.get_dataFile()+"_tem.txt").c_str());
+//		FermiModelOptions::get_instance().load(pt);
+//		MTSampler<FermiModel> sampler(options.get_numThreads(), options.get_compression_double(), samplerOptions);
+//		if(options.get_levelsFile().compare("") != 0)
+//			sampler.loadLevels(options.get_levelsFile().c_str());
+//		sampler.run();
 	}
 	if (model == "sloan"){
 		SloanData::get_instance().load(("Data/"+options.get_dataFile()+"_cts.txt").c_str(),

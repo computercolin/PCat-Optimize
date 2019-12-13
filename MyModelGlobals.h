@@ -1,21 +1,23 @@
-#ifndef PORTILLO_PCAT_DNEST_MYMODELGLOBALS_H
-#define PORTILLO_PCAT_DNEST_MYMODELGLOBALS_H
+#ifndef PORTILLO_PCAT_DNesT_MYMODELGLOBALS_H
+#define PORTILLO_PCAT_DNesT_MYMODELGLOBALS_H
 
 
 #include <vector>
+#include "Utils.h"
+
 
 struct MyModelGlobals {
     public:
         // isotropic background
         double bg_min, bg_max; // same prior bounds for all energy bins
 
-        std::vector<double> data;
-        std::vector<double> exposure;
-        std::vector<double> etemplate; //actual templates
+        DNest3::vec_align32<double> data;
+        DNest3::vec_align32<double> exposure;
+        DNest3::vec_align32<double> etemplate; //actual templates
 
         // emission templates
-        std::vector<double> tem_min;
-        std::vector<double> tem_max;
+        DNest3::vec_align32<double> tem_min;
+        DNest3::vec_align32<double> tem_max;
 
         static MyModelGlobals& get_instance() {
             static MyModelGlobals instance;
@@ -34,4 +36,4 @@ struct MyModelGlobals {
 };
 
 
-#endif //PORTILLO_PCAT_DNEST_MYMODELGLOBALS_H
+#endif //PORTILLO_PCAT_DNesT_MYMODELGLOBALS_H

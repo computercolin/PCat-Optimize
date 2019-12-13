@@ -57,12 +57,12 @@ include_directories(${CMAKE_BINARY_DIR})
 
 add_executable(main
         main.cpp
-        FermiData.cpp
-        FermiData.h
-        FermiModel.cpp
-        FermiModel.h
-        FermiModelOptions.cpp
-        FermiModelOptions.h
+#        FermiData.cpp
+#        FermiData.h
+#        FermiModel.cpp
+#        FermiModel.h
+#        FermiModelOptions.cpp
+#        FermiModelOptions.h
         MyDistribution.cpp
         MyDistribution.h
         MyModel.cpp
@@ -81,6 +81,7 @@ add_executable(main
         ${CMAKE_BINARY_DIR}/buildinfo.h
 #        ${DNEST3_SRCS}
 #        ${RJOBJ_SRCS}
+#        perf_utils.h
         )
 
 # ===== DNEST3 =====

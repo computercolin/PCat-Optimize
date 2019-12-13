@@ -1,14 +1,15 @@
+#include <boost/align/aligned_allocator.hpp>
+#include <cmath>
 #include "MyModel.h"
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
-#include <cmath>
 
 using namespace std;
 using namespace DNest3;
 
 MyModel::MyModel(MyRJObject<MyDistribution> objects, int nbin, int npsf, int npix, double pixel_area,
-	vector<double> data, vector<double> exposure, double bg_min, double bg_max,
-	int ntem, vector<double> tem_min, vector<double> tem_max, vector<double> etemplate)
+                 vec_align32<double> data, vec_align32<double> exposure, double bg_min, double bg_max,
+                 int ntem, vec_align32<double> tem_min, vec_align32<double> tem_max, vec_align32<double> etemplate)
 :globals(&MyModelGlobals::get_instance())
 ,objects(objects)
 ,nbin(nbin)

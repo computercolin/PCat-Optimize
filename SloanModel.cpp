@@ -1,5 +1,6 @@
 #include <cmath>
 #include <vector>
+#include <immintrin.h>
 #include "SloanModel.h"
 #include "RandomNumberGenerator.h"
 #include "Utils.h"
@@ -18,13 +19,13 @@ SloanModel::SloanModel()
         1., //all quantities will be per pixel
         SloanData::get_instance().get_image(),
         // exposure is all ones
-        vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), SloanData::get_instance().get_exposure()),
+        DNest3::vec_align32<double>(SloanData::get_instance().get_nband() * SloanData::get_instance().get_height() * SloanData::get_instance().get_width(), SloanData::get_instance().get_exposure()),
         SloanModelOptions::get_instance().get_bg_min(),
         SloanModelOptions::get_instance().get_bg_max(),
         1, // templates:
-        vector<double>(1, 0.99), // who
-        vector<double>(1, 1.01), // needs
-        vector<double>(SloanData::get_instance().get_nband()*SloanData::get_instance().get_height()*SloanData::get_instance().get_width(), 0)
+        DNest3::vec_align32<double>(1, 0.99), // who
+        DNest3::vec_align32<double>(1, 1.01), // needs
+        DNest3::vec_align32<double>(SloanData::get_instance().get_nband() * SloanData::get_instance().get_height() * SloanData::get_instance().get_width(), 0)
 	     ) // them?
     // ,sloanGlobals(&SloanModelGlobals::get_instance())
 	,width(SloanData::get_instance().get_width())
@@ -71,13 +72,34 @@ void SloanModel::add_source_flux(int ibin, int ipsf, double xc, double yc, doubl
 
 double SloanModel::logLikelihood() const
 {
-    double logL = 0.;
-    double *datum = &globals->data[0];
-    double *finalDatum = &globals->data[nbin*npsf*npix];
-    const double *lam = &this->lambda[0];
-    for (; datum<=finalDatum; datum++, lam++){
-        logL += std::pow(*lam - *datum, 2)
-                 / (-2 * gain_inv * (*datum - bias));
+    double *dataPos = &globals->data[0];
+    double *dataLast = &globals->data[nbin * npsf * npix -1];
+    double *dataLastChunk = (double *) ((uintptr_t) (dataLast - 3) & ~0b11111);
+    const double *lambdaPos = &this->lambda[0];
+    __m256d gain_pd = _mm256_set1_pd(gain_inv);
+    __m256d neg2_pd = _mm256_set1_pd(-2);
+    __m256d bias_pd = _mm256_set1_pd(bias);
+    __m128d logL_sd = _mm_setzero_pd();
+    for (;dataPos <= dataLastChunk;) {
+        __m256d _data = _mm256_load_pd(dataPos);
+        __m256d numerator = _mm256_sub_pd(_mm256_load_pd(lambdaPos), _data);
+        numerator = _mm256_mul_pd(numerator, numerator);
+        __m256d denominator = _mm256_mul_pd(_mm256_mul_pd(neg2_pd, gain_pd), _mm256_sub_pd(_data, bias_pd));
+        numerator = _mm256_div_pd(numerator, denominator);
+
+        // Sum all 4 packed doubles, accumulate on logL_sd.
+        numerator = _mm256_hadd_pd(numerator, numerator);
+        __m128d tmp = _mm256_extractf128_pd(numerator, 1);
+        tmp = _mm_add_sd(_mm256_castpd256_pd128(numerator), tmp);
+        logL_sd = _mm_add_sd(logL_sd, tmp);
+
+        dataPos += 4; lambdaPos += 4;
+    }
+
+    double logL = -1;
+    _mm_store_sd(&logL, logL_sd);
+    for (; dataPos <= dataLast; dataPos++, lambdaPos++) {
+        logL_sd += std::pow(*lambdaPos - *dataPos, 2) / (-2 * gain_inv * (*dataPos - bias));
     }
 
     return logL;

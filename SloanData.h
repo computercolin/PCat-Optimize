@@ -2,6 +2,7 @@
 #define _SloanData_
 
 #include <vector>
+#include "Utils.h"
 
 class SloanData
 {
@@ -24,7 +25,7 @@ class SloanData
 		std::vector< double > psfs;
 
 		// The pixels
-		std::vector< double > image;
+		DNest3::vec_align32< double > image;
 
 	public:
 		SloanData();
@@ -47,7 +48,7 @@ class SloanData
 			{ return x_rays; }
 		const std::vector< double >& get_y_rays() const
 			{ return y_rays; }
-		const std::vector< double >& get_image() const
+		const DNest3::vec_align32< double >& get_image() const
 			{ return image; }
 		const std::vector< double >& get_psfs() const
 			{ return psfs; }
