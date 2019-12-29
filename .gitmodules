@@ -1,6 +1,6 @@
 [submodule "lib_dnest3"]
 	path = lib_dnest3
-	url = https://github.com/eggplantbren/DNest3
+	url = https://github.com/computercolin/PCat-Optimize--DNest3
 [submodule "lib_rjobject"]
 	path = lib_rjobject
-	url = https://github.com/eggplantbren/RJObject
+	url = https://github.com/computercolin/PCat-Optimize--RJObject
